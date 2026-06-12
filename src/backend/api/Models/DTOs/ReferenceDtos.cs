@@ -1,18 +1,15 @@
 namespace api.Models.DTOs
 {
-    public class ServiceTypeDto
+    public class DirectionDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; } = "";
-        public string? Description { get; set; }
     }
 
-    public class ApplicationStatusDto
+    public class TrainingFormatDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; } = "";
-        public string Color { get; set; } = "";
-        public int SortOrder { get; set; }
     }
 
     public class UserDto

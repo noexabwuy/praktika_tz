@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models.DTOs;
+using api.Models.Entities;
 
 namespace api.Controllers
 {
@@ -16,28 +17,25 @@ namespace api.Controllers
             _context = context;
         }
 
-        [HttpGet("service-types")]
-        public async Task<IActionResult> GetServiceTypes()
+        [HttpGet("directions")]
+        public async Task<IActionResult> GetDirections()
         {
-            var items = await _context.ServiceTypes.ToListAsync();
-            return Ok(items.Select(x => new ServiceTypeDto
+            var items = await _context.Directions.ToListAsync();
+            return Ok(items.Select(x => new DirectionDto
             {
                 Id = x.Id,
-                Name = x.Name,
-                Description = x.Description
+                Name = x.Name
             }));
         }
 
-        [HttpGet("statuses")]
-        public async Task<IActionResult> GetStatuses()
+        [HttpGet("training-formats")]
+        public async Task<IActionResult> GetTrainingFormats()
         {
-            var items = await _context.ApplicationStatuses.OrderBy(x => x.SortOrder).ToListAsync();
-            return Ok(items.Select(x => new ApplicationStatusDto
+            var items = await _context.TrainingFormats.ToListAsync();
+            return Ok(items.Select(x => new TrainingFormatDto
             {
                 Id = x.Id,
-                Name = x.Name,
-                Color = x.Color,
-                SortOrder = x.SortOrder
+                Name = x.Name
             }));
         }
 
