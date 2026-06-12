@@ -11,7 +11,7 @@ namespace api.Models.Entities
         [MaxLength(100)]
         public string Name { get; set; } = "";
 
-        // связи
+        // РЎРІСЏР·Рё
         public ICollection<Application> Applications { get; set; } = new List<Application>();
     }
 }

@@ -30,7 +30,7 @@ namespace api.Models.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 
-        // связи
+        // РЎРІСЏР·Рё
         [InverseProperty("Author")]
         public ICollection<Application> AuthoredApplications { get; set; } = new List<Application>();
         [InverseProperty("AssignedTo")]

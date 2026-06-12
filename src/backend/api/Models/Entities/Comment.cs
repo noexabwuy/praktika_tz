@@ -16,7 +16,7 @@ namespace api.Models.Entities
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
-        // связи
+        // РЎРІСЏР·Рё
         [ForeignKey("ApplicationId")]
         public Application Application { get; set; } = null!;
         

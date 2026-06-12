@@ -21,7 +21,7 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Уникальные индексы
+            // РЈРЅРёРєР°Р»СЊРЅС‹Рµ РёРЅРґРµРєСЃС‹
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Login)
                 .IsUnique();
@@ -30,28 +30,28 @@ namespace api.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // Направления обучения
+            // РќР°РїСЂР°РІР»РµРЅРёСЏ РѕР±СѓС‡РµРЅРёСЏ
             modelBuilder.Entity<Direction>().HasData(
-                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000001"), Name = "Программирование" },
-                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Name = "Дизайн" },
-                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Name = "Менеджмент" },
-                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000004"), Name = "Маркетинг" }
+                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000001"), Name = "РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ" },
+                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Name = "Р”РёР·Р°Р№РЅ" },
+                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Name = "РњРµРЅРµРґР¶РјРµРЅС‚" },
+                new Direction { Id = Guid.Parse("10000000-0000-0000-0000-000000000004"), Name = "РњР°СЂРєРµС‚РёРЅРі" }
             );
 
-            // Форматы обучения
+            // Р¤РѕСЂРјР°С‚С‹ РѕР±СѓС‡РµРЅРёСЏ
             modelBuilder.Entity<TrainingFormat>().HasData(
-                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000001"), Name = "Очный" },
-                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000002"), Name = "Онлайн" },
-                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000003"), Name = "Вебинар" },
-                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000004"), Name = "Интенсив" }
+                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000001"), Name = "РћС‡РЅС‹Р№" },
+                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000002"), Name = "РћРЅР»Р°Р№РЅ" },
+                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000003"), Name = "Р’РµР±РёРЅР°СЂ" },
+                new TrainingFormat { Id = Guid.Parse("20000000-0000-0000-0000-000000000004"), Name = "РРЅС‚РµРЅСЃРёРІ" }
             );
 
-            // Пользователи
+            // РџРѕР»СЊР·РѕРІР°С‚РµР»Рё
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    FullName = "Администратор",
+                    FullName = "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ",
                     Login = "admin",
                     Email = "admin@training.ru",
                     PasswordHash = "admin123",
@@ -61,7 +61,7 @@ namespace api.Data
                 new User
                 {
                     Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    FullName = "Иванов Иван",
+                    FullName = "РРІР°РЅРѕРІ РРІР°РЅ",
                     Login = "ivanov",
                     Email = "ivanov@training.ru",
                     PasswordHash = "123",
@@ -71,7 +71,7 @@ namespace api.Data
                 new User
                 {
                     Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    FullName = "Петрова Мария",
+                    FullName = "РџРµС‚СЂРѕРІР° РњР°СЂРёСЏ",
                     Login = "petrova",
                     Email = "petrova@training.ru",
                     PasswordHash = "123",

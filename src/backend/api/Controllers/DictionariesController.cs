@@ -15,8 +15,8 @@ namespace api.Controllers
         {
             _context = context;
         }
-
-        // Эндпоинт 1 - получить список направлений обучения
+        
+        // Р­РЅРґРїРѕРёРЅС‚ 1 - РїРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РЅР°РїСЂР°РІР»РµРЅРёР№ РѕР±СѓС‡РµРЅРёСЏ
         [HttpGet("directions")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         public async Task<IActionResult> GetDirections()
@@ -32,7 +32,7 @@ namespace api.Controllers
             return Ok(directions);
         }
 
-        // Эндпоинт 2 - получить список форматов обучения
+        // Р­РЅРґРїРѕРёРЅС‚ 2 - РїРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє С„РѕСЂРјР°С‚РѕРІ РѕР±СѓС‡РµРЅРёСЏ
         [HttpGet("study-formats")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         public async Task<IActionResult> GetStudyFormats()
@@ -48,19 +48,19 @@ namespace api.Controllers
             return Ok(formats);
         }
 
-        // Эндпоинт 3 - получить список статусов заявок
+        // Р­РЅРґРїРѕРёРЅС‚ 3 - РїРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЃС‚Р°С‚СѓСЃРѕРІ Р·Р°СЏРІРѕРє
         [HttpGet("statuses")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         public IActionResult GetStatuses()
         {
             var statuses = new List<DictionaryDto>
             {
-                new DictionaryDto { Id = "New", Name = "Новая" },
-                new DictionaryDto { Id = "InProgress", Name = "В работе" },
-                new DictionaryDto { Id = "NeedsInfo", Name = "Требуется уточнение" },
-                new DictionaryDto { Id = "Approved", Name = "Согласована" },
-                new DictionaryDto { Id = "Rejected", Name = "Отклонена" },
-                new DictionaryDto { Id = "Completed", Name = "Завершена" }
+                new DictionaryDto { Id = "New", Name = "РќРѕРІР°СЏ" },
+                new DictionaryDto { Id = "InProgress", Name = "Р’ СЂР°Р±РѕС‚Рµ" },
+                new DictionaryDto { Id = "NeedsInfo", Name = "РўСЂРµР±СѓРµС‚СЃСЏ СѓС‚РѕС‡РЅРµРЅРёРµ" },
+                new DictionaryDto { Id = "Approved", Name = "РЎРѕРіР»Р°СЃРѕРІР°РЅР°" },
+                new DictionaryDto { Id = "Rejected", Name = "РћС‚РєР»РѕРЅРµРЅР°" },
+                new DictionaryDto { Id = "Completed", Name = "Р—Р°РІРµСЂС€РµРЅР°" }
             };
 
             return Ok(statuses);

@@ -17,17 +17,17 @@ namespace api.Models.Entities
         [MaxLength(50)]
         public string Status { get; set; } = "New";
 
-        // Внешние ключи
+        // Р’РЅРµС€РЅРёРµ РєР»СЋС‡Рё
         public Guid DirectionId { get; set; }
         public Guid FormatId { get; set; }
         public Guid AuthorId { get; set; }
         public Guid? AssignedToId { get; set; }
 
-        // Даты
+        // Р”Р°С‚С‹
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        // Навигационные свойства (связи)
+        // РќР°РІРёРіР°С†РёРѕРЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° (СЃРІСЏР·Рё)
         [ForeignKey("DirectionId")]
         public Direction Direction { get; set; } = null!;
 
@@ -40,7 +40,7 @@ namespace api.Models.Entities
         [ForeignKey("AssignedToId")]
         public User? AssignedTo { get; set; }
 
-        // Коллекции для связанных данных
+        // РљРѕР»Р»РµРєС†РёРё РґР»СЏ СЃРІСЏР·Р°РЅРЅС‹С… РґР°РЅРЅС‹С…
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<StatusHistory> StatusHistories { get; set; } = new List<StatusHistory>();
     }

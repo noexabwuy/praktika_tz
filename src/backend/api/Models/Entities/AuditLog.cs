@@ -14,13 +14,13 @@ namespace api.Models.Entities
         public string Action { get; set; } = "";  // Create, Update, Delete
 
         [MaxLength(50)]
-        public string Entity { get; set; } = "";  // Application, User, Direction и т.д.
+        public string Entity { get; set; } = "";  // Application, User, Direction Рё С‚.Рґ.
 
         public Guid EntityId { get; set; }
 
         public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
 
-        // связи
+        // РЎРІСЏР·Рё
         [ForeignKey("UserId")]
         public User User { get; set; } = null!;
     }

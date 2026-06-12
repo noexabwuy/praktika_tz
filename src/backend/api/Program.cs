@@ -8,7 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("TrainingCenterDB")); // Временная база данных
+    options.UseInMemoryDatabase("TrainingCenterDBРІСЂРІ")); // Р’СЂРµРјРµРЅРЅР°СЏ Р±Р°Р·Р° РґР°РЅРЅС‹С…
 
 builder.Services.AddCors();
 
