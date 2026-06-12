@@ -31,9 +31,45 @@ namespace api.Data
             );
 
             modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, FullName = "Администратор", Username = "admin", Password = "admin123", Role = "Admin", IsActive = true },
-                new User { Id = 2, FullName = "Петрова Мария", Username = "manager", Password = "mary123", Role = "Manager", IsActive = true },
-                new User { Id = 3, FullName = "Сидоров Алексей", Username = "alexey18", Password = "alex123", Role = "Manager", IsActive = true }
+                new User {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    FullName = "Администратор",
+                    Login = "admin",
+                    Email = "admin@training.ru",
+                    PasswordHash = "admin123",  // должен быть хэш!
+                    Role = "Admin",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    FullName = "Иванов Иван",
+                    Login = "ivanov",
+                    Email = "ivanov@training.ru",
+                    PasswordHash = "123",
+                    Role = "Manager",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    FullName = "Петрова Мария",
+                    Login = "petrova",
+                    Email = "petrova@training.ru",
+                    PasswordHash = "123",
+                    Role = "Manager",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    FullName = "Сидоров Алексей",
+                    Login = "sidorov",
+                    Email = "sidorov@training.ru",
+                    PasswordHash = "123",
+                    Role = "Applicant",
+                    CreatedAt = DateTime.UtcNow
+                }
             );
         }
     }

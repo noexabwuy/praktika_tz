@@ -44,8 +44,15 @@ namespace api.Controllers
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
-            var items = await _context.Users.Where(u => u.IsActive).ToListAsync();
-            return Ok(items.Select(x => new UserDto { Id = x.Id, FullName = x.FullName, Username = x.Username, Role = x.Role }));
+            var items = await _context.Users.ToListAsync();
+            return Ok(items.Select(x => new UserDto
+            {
+                Id = x.Id,
+                FullName = x.FullName,
+                Login = x.Login,
+                Email = x.Email,
+                Role = x.Role
+            }));
         }
     }
 }
