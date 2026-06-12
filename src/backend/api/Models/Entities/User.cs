@@ -2,11 +2,12 @@ namespace api.Models.Entities
 {
     public class User
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string FullName { get; set; } = "";
-        public string Username { get; set; } = "";
-        public string Password { get; set; } = "";
-        public string Role { get; set; } = "";
-        public bool IsActive { get; set; } = true;
+        public string Login { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string PasswordHash { get; set; } = "";
+        public string Role { get; set; } = "Applicant";  // Applicant, Manager, Admin, Director
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
