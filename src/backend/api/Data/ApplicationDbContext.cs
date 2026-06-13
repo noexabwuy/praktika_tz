@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 using api.Models.Entities;
 
 namespace api.Data
@@ -54,7 +55,7 @@ namespace api.Data
                     FullName = "Администратор",
                     Login = "admin",
                     Email = "admin@training.ru",
-                    PasswordHash = "admin123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                     Role = "Admin",
                     CreatedAt = DateTime.UtcNow
                 },
@@ -64,7 +65,7 @@ namespace api.Data
                     FullName = "Иванов Иван",
                     Login = "ivanov",
                     Email = "ivanov@training.ru",
-                    PasswordHash = "123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
                     Role = "Manager",
                     CreatedAt = DateTime.UtcNow
                 },
@@ -74,7 +75,7 @@ namespace api.Data
                     FullName = "Петрова Мария",
                     Login = "petrova",
                     Email = "petrova@training.ru",
-                    PasswordHash = "123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
                     Role = "Applicant",
                     CreatedAt = DateTime.UtcNow
                 }
