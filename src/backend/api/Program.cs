@@ -1,5 +1,8 @@
+using dotenv.net;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
+
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
 var builder = WebApplication.CreateBuilder(args);
 
