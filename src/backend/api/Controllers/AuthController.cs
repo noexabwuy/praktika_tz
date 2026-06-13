@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -33,6 +33,16 @@ namespace api.Controllers
             if (string.IsNullOrWhiteSpace(dto.Login) || string.IsNullOrWhiteSpace(dto.Password))
             {
                 return BadRequest(new { message = "Логин и пароль обязательны." });
+            }
+
+            if (dto.Password.Length < 8)
+            {
+                return BadRequest(new { message = "Пароль должен содержать минимум 8 символов." });
+            }
+
+            if (dto.Password.Length > 72)
+            {
+                return BadRequest(new { message = "Пароль не должен превышать 72 символа." });
             }
 
             var exists = await _context.Users.AnyAsync(u => u.Login.ToLower() == dto.Login.ToLower());
