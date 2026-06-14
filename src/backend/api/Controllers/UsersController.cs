@@ -8,7 +8,7 @@ using api.Models.Enums;
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [Authorize(Roles = "Manager,Admin,Director")]  // Только эти роли имеют доступ
     public class UsersController : ControllerBase
     {
