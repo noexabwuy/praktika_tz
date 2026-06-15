@@ -67,7 +67,7 @@ namespace api.Data
                     Email = "admin@training.ru",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                     Role = "Admin",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new User
                 {
@@ -77,7 +77,7 @@ namespace api.Data
                     Email = "ivanov@training.ru",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
                     Role = "Manager",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new User
                 {
@@ -87,7 +87,7 @@ namespace api.Data
                     Email = "petrova@training.ru",
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
                     Role = "Applicant",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
         }
