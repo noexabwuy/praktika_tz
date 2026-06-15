@@ -109,8 +109,9 @@ namespace api.Controllers
         // Вспомогательный метод генерации JWT
         private string GenerateJwtToken(User user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings.GetValue<string>("Secret");
+            var secretKey = Environment.GetEnvironmentVariable("JwtSettings__Secret") ?? _configuration["JwtSettings:Secret"];
+            var issuer = Environment.GetEnvironmentVariable("JwtSettings__Issuer") ?? _configuration["JwtSettings:Issuer"];
+            var audience = Environment.GetEnvironmentVariable("JwtSettings__Audience") ?? _configuration["JwtSettings:Audience"];
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -124,8 +125,8 @@ namespace api.Controllers
             };
 
             var token = new JwtSecurityToken(
-                issuer: jwtSettings.GetValue<string>("Issuer"),
-                audience: jwtSettings.GetValue<string>("Audience"),
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: creds
