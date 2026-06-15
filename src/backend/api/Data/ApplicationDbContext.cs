@@ -52,6 +52,16 @@ namespace api.Data
                 new User
                 {
                     Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    FullName = "Директор",
+                    Login = "director",
+                    Email = "director@training.ru",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("director123"),
+                    Role = "Director",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new User
+                {
+                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     FullName = "Администратор",
                     Login = "admin",
                     Email = "admin@training.ru",
@@ -61,7 +71,7 @@ namespace api.Data
                 },
                 new User
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
                     FullName = "Иванов Иван",
                     Login = "ivanov",
                     Email = "ivanov@training.ru",
@@ -71,7 +81,7 @@ namespace api.Data
                 },
                 new User
                 {
-                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
                     FullName = "Петрова Мария",
                     Login = "petrova",
                     Email = "petrova@training.ru",
