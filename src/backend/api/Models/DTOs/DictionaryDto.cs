@@ -16,9 +16,9 @@ namespace api.Models.DTOs
 
     public class DictionaryRequestDto
     {
-        [Required(ErrorMessage = "Название обязательно")]
-        [MinLength(2, ErrorMessage = "Название должно содержать минимум 2 символа")]
-        [MaxLength(100, ErrorMessage = "Название не должно превышать 100 символов")]
+        [Required(ErrorMessage = "РќР°Р·РІР°РЅРёРµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ")]
+        [MinLength(2, ErrorMessage = "РќР°Р·РІР°РЅРёРµ РґРѕР»Р¶РЅРѕ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 2 СЃРёРјРІРѕР»Р°")]
+        [MaxLength(100, ErrorMessage = "РќР°Р·РІР°РЅРёРµ РЅРµ РґРѕР»Р¶РЅРѕ РїСЂРµРІС‹С€Р°С‚СЊ 100 СЃРёРјРІРѕР»РѕРІ")]
         public string Name { get; set; } = "";
     }
 }
