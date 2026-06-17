@@ -35,8 +35,8 @@ namespace api.Controllers
             return Ok(directions);
         }
 
-        // GET /api/dictionaries/study-formats - список форматов
-        [HttpGet("study-formats")]
+        // GET /api/dictionaries/training-formats - список форматов
+        [HttpGet("training-formats")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         public async Task<IActionResult> GetStudyFormats()
         {
@@ -78,6 +78,11 @@ namespace api.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateDirection([FromBody] DictionaryRequestDto dto)
         {
+            if (dto == null)
+            {
+                return BadRequest(new { message = "Некорректные данные запроса" });
+            }
+
             var exists = await _context.Directions
                 .AnyAsync(d => d.Name.ToLower() == dto.Name.ToLower());
 
@@ -97,7 +102,7 @@ namespace api.Controllers
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
-                Id = direction.Id.ToString(),
+                Id = direction.Id,
                 Name = direction.Name
             });
         }
@@ -132,7 +137,7 @@ namespace api.Controllers
 
             return Ok(new DictionaryResponseDto
             {
-                Id = direction.Id.ToString(),
+                Id = direction.Id,
                 Name = direction.Name
             });
         }
@@ -177,6 +182,11 @@ namespace api.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateTrainingFormat([FromBody] DictionaryRequestDto dto)
         {
+            if (dto == null)
+            {
+                return BadRequest(new { message = "Некорректные данные запроса" });
+            }
+
             var exists = await _context.TrainingFormats
                 .AnyAsync(f => f.Name.ToLower() == dto.Name.ToLower());
 
@@ -196,7 +206,7 @@ namespace api.Controllers
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
-                Id = format.Id.ToString(),
+                Id = format.Id,
                 Name = format.Name
             });
         }
@@ -231,7 +241,7 @@ namespace api.Controllers
 
             return Ok(new DictionaryResponseDto
             {
-                Id = format.Id.ToString(),
+                Id = format.Id,
                 Name = format.Name
             });
         }

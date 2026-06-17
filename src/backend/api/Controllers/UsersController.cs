@@ -44,7 +44,7 @@ namespace api.Controllers
             var users = await query
                 .Select(u => new UserResponseDto
                 {
-                    Id = u.Id.ToString(),
+                    Id = u.Id,
                     FullName = u.FullName,
                     Role = u.Role
                 })
