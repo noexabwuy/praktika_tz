@@ -54,8 +54,9 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+// Подключение к PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("TrainingCenterDB"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT Аутентификация
 var secretKey = Environment.GetEnvironmentVariable("JwtSettings__Secret") ?? builder.Configuration["JwtSettings:Secret"];
@@ -96,7 +97,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();  // Применяет миграции при запуске
 }
 
 app.Run();
