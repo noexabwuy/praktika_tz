@@ -198,5 +198,148 @@ namespace api.Controllers
 
             return CreatedAtAction(nameof(Create), new { id = responseDto.Id }, responseDto);
         }
+
+        /// <summary>
+        /// PATCH /api/applications/{id}/assign
+        /// Назначение ответственного менеджера на заявку
+        /// </summary>
+        [Authorize(Roles = "Manager")]
+        [HttpPatch("{id}/assign")]
+        public async Task<IActionResult> AssignApplication(Guid id, [FromBody] AssignApplicationRequestDto dto)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Direction)
+                .Include(a => a.Format)
+                .Include(a => a.Author)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                return NotFound(new { message = "Заявка не найдена." });
+            }
+
+            var targetUser = await _context.Users.FindAsync(dto.AssignedToId);
+            if (targetUser == null)
+            {
+                return BadRequest(new { message = "Указанный пользователь не найден." });
+            }
+
+            if (!string.Equals(targetUser.Role, "Manager", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "Назначить ответственным можно только пользователя с ролью Manager." });
+            }
+
+            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
+
+            if (string.Equals(application.Status, "New", StringComparison.OrdinalIgnoreCase))
+            {
+                var history = new StatusHistory
+                {
+                    Id = Guid.NewGuid(),
+                    ApplicationId = application.Id,
+                    OldStatus = application.Status,
+                    NewStatus = "InProgress",
+                    ChangedById = currentUserId,
+                    ChangedAt = DateTime.UtcNow
+                };
+                _context.StatusHistories.Add(history);
+                application.Status = "InProgress";
+            }
+
+            application.AssignedToId = dto.AssignedToId;
+            application.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _context.Entry(application).Reference(a => a.AssignedTo).LoadAsync();
+
+            var responseDto = new ApplicationResponseDto
+            {
+                Id = application.Id,
+                Title = application.Title,
+                Description = application.Description,
+                Status = application.Status,
+                DirectionId = application.DirectionId,
+                FormatId = application.FormatId,
+                AuthorId = application.AuthorId,
+                AssignedToId = application.AssignedToId,
+                CreatedAt = application.CreatedAt,
+                UpdatedAt = application.UpdatedAt,
+                DirectionName = application.Direction?.Name ?? "",
+                FormatName = application.Format?.Name ?? "",
+                AuthorName = application.Author?.FullName ?? "",
+                AssignedToName = application.AssignedTo?.FullName
+            };
+
+            return Ok(responseDto);
+        }
+
+        /// <summary>
+        /// PATCH /api/applications/{id}/status
+        /// Изменение статуса заявки менеджером
+        /// </summary>
+        [Authorize(Roles = "Manager")]
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateApplicationStatusRequestDto dto)
+        {
+            var application = await _context.Applications
+                .Include(a => a.Direction)
+                .Include(a => a.Format)
+                .Include(a => a.Author)
+                .Include(a => a.AssignedTo)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (application == null)
+            {
+                return NotFound(new { message = "Заявка не найдена." });
+            }
+
+            if ((string.Equals(dto.Status, "Approved", StringComparison.OrdinalIgnoreCase) || 
+                 string.Equals(dto.Status, "Rejected", StringComparison.OrdinalIgnoreCase)) && 
+                application.AssignedToId == null)
+            {
+                return BadRequest(new { message = "Нельзя перевести заявку в финальный статус без назначенного ответственного менеджера." });
+            }
+
+            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
+
+            var history = new StatusHistory
+            {
+                Id = Guid.NewGuid(),
+                ApplicationId = application.Id,
+                OldStatus = application.Status,
+                NewStatus = dto.Status,
+                ChangedById = currentUserId,
+                ChangedAt = DateTime.UtcNow
+            };
+            _context.StatusHistories.Add(history);
+
+            application.Status = dto.Status;
+            application.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            var responseDto = new ApplicationResponseDto
+            {
+                Id = application.Id,
+                Title = application.Title,
+                Description = application.Description,
+                Status = application.Status,
+                DirectionId = application.DirectionId,
+                FormatId = application.FormatId,
+                AuthorId = application.AuthorId,
+                AssignedToId = application.AssignedToId,
+                CreatedAt = application.CreatedAt,
+                UpdatedAt = application.UpdatedAt,
+                DirectionName = application.Direction?.Name ?? "",
+                FormatName = application.Format?.Name ?? "",
+                AuthorName = application.Author?.FullName ?? "",
+                AssignedToName = application.AssignedTo?.FullName
+            };
+
+            return Ok(responseDto);
+        }
     }
 }
