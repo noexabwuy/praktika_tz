@@ -8,7 +8,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
   ...props
 }) => {
   return (
-    <div className="relative w-[600px] h-[42px] group">
+    <div className="relative w-full max-w-[600px] h-[42px] group">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-text-secondary group-hover:text-primary pointer-events-none transition-colors" />
       <input
         type="text"

@@ -1,16 +1,13 @@
 import React from 'react';
-
-export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'primary' | 'outline' | 'hover';
-  icon?: React.ReactNode;
-  className?: string;
-}
+import type { IconButtonProps } from './IconButton.types';
 
 export const IconButton: React.FC<IconButtonProps> = ({
   variant = 'default',
   icon,
   className = '',
   disabled = false,
+  tooltip,
+  ariaLabel,
   ...props
 }) => {
   const baseClasses =
@@ -33,6 +30,8 @@ export const IconButton: React.FC<IconButtonProps> = ({
     <button
       className={`${baseClasses} ${variantClasses[variant] || variantClasses.default} ${className}`}
       disabled={disabled}
+      title={tooltip}
+      aria-label={ariaLabel}
       {...props}
     >
       {icon || defaultIcon}
