@@ -25,4 +25,18 @@ namespace api.Models.DTOs
         public string Status { get; set; } = "New";
         public DateTime CreatedAt { get; set; }
     }
+
+    public class AssignApplicationRequestDto
+    {
+        [Required(ErrorMessage = "Идентификатор ответственного менеджера обязателен.")]
+        public Guid AssignedToId { get; set; }
+    }
+
+    public class UpdateApplicationStatusRequestDto
+    {
+        [Required(ErrorMessage = "Статус обязателен для заполнения.")]
+        [RegularExpression("^(New|InProgress|ClarificationRequired|Approved|Rejected)$", 
+            ErrorMessage = "Недопустимый статус. Допустимые: New, InProgress, ClarificationRequired, Approved, Rejected")]
+        public string Status { get; set; } = "";
+    }
 }
