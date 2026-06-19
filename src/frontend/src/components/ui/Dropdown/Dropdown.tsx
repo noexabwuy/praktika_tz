@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { DropdownProps } from './Dropdown.types';
 import { IconToggle } from '../IconToggle';
+import { ICON_SIZE } from '../../../utils/iconSize';
 
 export const Dropdown: React.FC<DropdownProps> = ({
   label,
@@ -45,7 +46,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
             w-full h-[42px] px-sm
             bg-bg-card transition-all duration-200 outline-none border relative
             ${isOpen 
-              ? 'border-primary bg-primary-light z-[60] shadow-xl rounded-t-base rounded-b-none' 
+              ? 'border-primary bg-primary-light z-[60] shadow-md rounded-t-base rounded-b-none' 
               : 'border-border rounded-base'
             }
             ${error ? 'border-status-error' : ''}
@@ -56,8 +57,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
           </span>
           <IconToggle 
             isActive={isOpen}
-            activeIcon={<ChevronUp size={20} />}
-            inactiveIcon={<ChevronDown size={20} />}
+            activeIcon={<ChevronUp size={ICON_SIZE.base} />}
+            inactiveIcon={<ChevronDown size={ICON_SIZE.base} />}
             className="text-text-primary"
           />
         </button>
@@ -82,7 +83,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                     {option.label}
                   </button>
                   {index < options.length - 1 && (
-                    <div className="h-[1px] mx-sm bg-primary" />
+                    <div className="h-[1px] mx-sm bg-border" />
                   )}
                 </React.Fragment>
               ))}

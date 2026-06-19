@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { LogOut, Pin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { IconToggle } from '../components/ui/IconToggle';
 import { useAuth } from '../context/AuthContext';
 import { ICON_SIZE } from '../utils/iconSize';
@@ -50,9 +51,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ items }) => {
         </div>
 
         {items.map((item, index) => (
-          <a
+          <Link
             key={index}
-            href={item.href || "#"}
+            to={item.href || "#"}
             className={`
               flex items-center h-[42px] px-md transition-colors relative
               ${item.active 
@@ -72,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ items }) => {
             <span className={`ml-md text-text-l font-medium transition-all duration-300 whitespace-nowrap overflow-hidden ${isPinned ? 'opacity-100 w-auto' : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'}`}>
               {item.label}
             </span>
-          </a>
+          </Link>
         ))}
       </nav>
 

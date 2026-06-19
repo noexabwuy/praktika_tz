@@ -1,8 +1,8 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import type { TextInputProps } from './Input.types';
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ label, error, helperText, leftIcon, rightIcon, className = '', ...props }, ref) => {
+  ({ label, error, helperText, rightIcon, className = '', ...props }, ref) => {
     return (
       <div className="flex flex-col gap-xs w-full">
         {label && (

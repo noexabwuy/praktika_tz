@@ -1,8 +1,9 @@
-import React, { forwardRef, useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import type { TextInputProps } from './Input.types';
 import { TextInput } from './TextInput';
 import { IconToggle } from '../IconToggle';
+import { ICON_SIZE } from '../../../utils/iconSize';
 
 export const PasswordInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props, ref) => {
@@ -26,8 +27,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, TextInputProps>(
           >
             <IconToggle 
               isActive={showPassword}
-              activeIcon={<EyeOff size={20} strokeWidth={1.5} />}
-              inactiveIcon={<Eye size={20} strokeWidth={1.5} />}
+              activeIcon={<EyeOff size={ICON_SIZE.base} strokeWidth={1.5} />}
+              inactiveIcon={<Eye size={ICON_SIZE.base} strokeWidth={1.5} />}
             />
           </button>
         }

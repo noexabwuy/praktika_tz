@@ -1,7 +1,7 @@
-import React, { forwardRef } from 'react';
-import type { BaseInputProps } from './Input.types';
+import { forwardRef } from 'react';
+import type { TextAreaProps } from './Input.types';
 import { useTextAreaResize } from './useTextAreaResize';
-export const TextArea = forwardRef<HTMLTextAreaElement, BaseInputProps>(
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ({ label, error, helperText, className = '', value, onInput, ...props }, ref) => {
     const { textAreaRef, resize } = useTextAreaResize(value);
 
@@ -15,7 +15,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, BaseInputProps>(
       }
     };
 
-    const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const handleInput = (e: any) => {
       resize();
       if (onInput) onInput(e);
     };
