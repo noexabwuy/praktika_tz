@@ -2,27 +2,15 @@ import { UserRound } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ICON_SIZE } from '../utils/iconSize';
+import { PAGE_TITLES, ROLE_LABELS } from '../utils/navigation';
 
-const ROLE_LABELS: Record<string, string> = {
-  Applicant: 'Заявитель',
-  Manager:   'Менеджер',
-  Admin:     'Администратор',
-  Director:  'Руководитель',
-};
-const PAGE_TITLES: Record<string, string> = {
-  '/':              'Главная',
-  '/applications':  'Заявки',
-  '/dictionaries':  'Справочники',
-  '/users':         'Пользователи',
-  '/stats':         'Статистика',
-};
 const UserSkeleton: React.FC = () => (
   <div className="flex items-center gap-sm animate-pulse">
-    <div className="flex flex-col items-end gap-[6px]">
+    <div className="flex flex-col items-end gap-sm">
       <div className="skeleton h-[14px] w-[110px]" />
       <div className="skeleton h-[11px] w-[72px]" />
     </div>
-    <div className="skeleton rounded-full ml-1" style={{ width: ICON_SIZE.avatar, height: ICON_SIZE.avatar }} />
+    <div className="skeleton rounded-full ml-xs" style={{ width: ICON_SIZE.avatar, height: ICON_SIZE.avatar }} />
   </div>
 );
 
@@ -38,7 +26,7 @@ export const Header: React.FC = () => {
   return (
     <header className="flex-shrink-0 h-[60px] w-full bg-bg-card border-b-2 border-primary flex items-center justify-between px-lg z-10 relative">
       <div className="flex items-center gap-md">
-        <div className="w-8 h-8 rounded bg-primary flex-shrink-0" />
+        <div className="w-8 h-8 rounded-base bg-primary flex-shrink-0" />
 
         {isLoading ? (
           <TitleSkeleton />
@@ -56,28 +44,28 @@ export const Header: React.FC = () => {
         ) : user ? (
           <>
             <div className="flex flex-col justify-center items-end h-full">
-              <span className="text-text-l font-bold text-text-primary leading-none mb-1">
+              <span className="text-text-l font-bold text-text-primary leading-none mb-xs">
                 {user.fullName}
               </span>
               <span className="text-text-m font-bold text-text-secondary leading-none">
                 {ROLE_LABELS[user.role] ?? user.role}
               </span>
             </div>
-            <div className="flex items-center justify-center text-text-primary ml-1">
+            <div className="flex items-center justify-center text-text-primary ml-xs">
               <UserRound size={ICON_SIZE.avatar} strokeWidth={2} />
             </div>
           </>
         ) : (
           <>
             <div className="flex flex-col justify-center items-end h-full">
-              <span className="text-text-l font-bold text-text-primary leading-none mb-1">
+              <span className="text-text-l font-bold text-text-primary leading-none mb-xs">
                 Гость
               </span>
               <span className="text-text-m font-bold text-text-secondary leading-none">
                 Не авторизован
               </span>
             </div>
-            <div className="flex items-center justify-center text-text-primary ml-1">
+            <div className="flex items-center justify-center text-text-primary ml-xs">
               <UserRound size={ICON_SIZE.avatar} strokeWidth={1.5} />
             </div>
           </>
