@@ -82,7 +82,9 @@ namespace api.Models.DTOs
     public class AnalyticsStatisticsDto
     {
         public int TotalApplications { get; set; }
+        public int TotalUsers { get; set; }
         public Dictionary<string, int> ByStatuses { get; set; } = new();
         public Dictionary<string, int> ByDirections { get; set; } = new();
+        public Dictionary<string, int> ByFormats { get; set; } = new();
     }
 }
