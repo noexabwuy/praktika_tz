@@ -296,7 +296,8 @@ namespace api.Controllers
             }
 
             if ((string.Equals(dto.Status, "Approved", StringComparison.OrdinalIgnoreCase) || 
-                 string.Equals(dto.Status, "Rejected", StringComparison.OrdinalIgnoreCase)) && 
+                 string.Equals(dto.Status, "Rejected", StringComparison.OrdinalIgnoreCase) || 
+                 string.Equals(dto.Status, "Completed", StringComparison.OrdinalIgnoreCase)) && 
                 application.AssignedToId == null)
             {
                 return BadRequest(new { message = "Нельзя перевести заявку в финальный статус без назначенного ответственного менеджера." });
@@ -340,6 +341,115 @@ namespace api.Controllers
             };
 
             return Ok(responseDto);
+        }
+
+        /// <summary>
+        /// СИСТЕМА КОММЕНТАРИЕВ (POST /api/applications/{id}/comments)
+        /// </summary>
+        [HttpPost("{id}/comments")]
+        [ProducesResponseType(typeof(CommentResponseDto), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> AddComment(Guid id, [FromBody] CreateCommentRequestDto dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+            {
+                return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
+            }
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var application = await _context.Applications.FindAsync(id);
+            if (application == null)
+            {
+                return NotFound(new { message = "Заявка не найдена." });
+            }
+
+            // Проверка прав: заявитель может комментировать только свою заявку
+            if (userRole == "Applicant" && application.AuthorId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var comment = new Comment
+            {
+                Id = Guid.NewGuid(),
+                ApplicationId = id,
+                AuthorId = currentUserId,
+                Text = dto.Text,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            // Подгружаем имя автора для красивого ответа
+            var authorName = await _context.Users
+                .Where(u => u.Id == currentUserId)
+                .Select(u => u.FullName)
+                .FirstOrDefaultAsync() ?? "";
+
+            var responseDto = new CommentResponseDto
+            {
+                Id = comment.Id,
+                ApplicationId = comment.ApplicationId,
+                AuthorId = comment.AuthorId,
+                AuthorName = authorName,
+                Text = comment.Text,
+                CreatedAt = comment.CreatedAt
+            };
+
+            return Ok(responseDto);
+        }
+
+        /// <summary>
+        /// ПОЛУЧЕНИЕ КОММЕНТАРИЕВ (GET /api/applications/{id}/comments)
+        /// </summary>
+        [HttpGet("{id}/comments")]
+        [ProducesResponseType(typeof(List<CommentResponseDto>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> GetComments(Guid id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+            {
+                return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
+            }
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            var application = await _context.Applications.FindAsync(id);
+            if (application == null)
+            {
+                return NotFound(new { message = "Заявка не найдена." });
+            }
+
+            // Проверка прав: заявитель может видеть комментарии только к своей заявке
+            if (userRole == "Applicant" && application.AuthorId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var comments = await _context.Comments
+                .Where(c => c.ApplicationId == id)
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new CommentResponseDto
+                {
+                    Id = c.Id,
+                    ApplicationId = c.ApplicationId,
+                    AuthorId = c.AuthorId,
+                    AuthorName = c.Author.FullName,
+                    Text = c.Text,
+                    CreatedAt = c.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(comments);
         }
     }
 }

@@ -52,8 +52,39 @@ namespace api.Models.DTOs
     public class UpdateApplicationStatusRequestDto
     {
         [Required(ErrorMessage = "Статус обязателен для заполнения.")]
-        [RegularExpression("^(New|InProgress|ClarificationRequired|Approved|Rejected)$", 
-            ErrorMessage = "Недопустимый статус. Допустимые: New, InProgress, ClarificationRequired, Approved, Rejected")]
+        [RegularExpression("^(New|InProgress|NeedsInfo|Approved|Rejected|Completed)$", 
+            ErrorMessage = "Недопустимый статус. Допустимые: New, InProgress, NeedsInfo, Approved, Rejected, Completed")]
         public string Status { get; set; } = "";
+    }
+
+    // --- DTO ДЛЯ КОММЕНТАРИЕВ ---
+
+    public class CreateCommentRequestDto
+    {
+        [Required(ErrorMessage = "Текст комментария обязателен для заполнения.")]
+        [MinLength(1, ErrorMessage = "Комментарий не может быть пустым.")]
+        [MaxLength(1000, ErrorMessage = "Комментарий не должен превышать 1000 символов.")]
+        public string Text { get; set; } = "";
+    }
+
+    public class CommentResponseDto
+    {
+        public Guid Id { get; set; }
+        public Guid ApplicationId { get; set; }
+        public Guid AuthorId { get; set; }
+        public string AuthorName { get; set; } = "";
+        public string Text { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
+    }
+
+    // --- DTO ДЛЯ АНАЛИТИКИ ---
+
+    public class AnalyticsStatisticsDto
+    {
+        public int TotalApplications { get; set; }
+        public int TotalUsers { get; set; }
+        public Dictionary<string, int> ByStatuses { get; set; } = new();
+        public Dictionary<string, int> ByDirections { get; set; } = new();
+        public Dictionary<string, int> ByFormats { get; set; } = new();
     }
 }
