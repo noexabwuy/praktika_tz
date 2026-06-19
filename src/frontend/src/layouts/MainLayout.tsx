@@ -9,9 +9,12 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 function withActive(items: NavItem[], pathname: string): NavItem[] {
+  const hasExactMatch = items.some((item) => item.href === pathname);
   return items.map((item) => ({
     ...item,
-    active: item.href === pathname || (pathname !== '/' && item.href !== '/' && pathname.startsWith(item.href ?? '')),
+    active: hasExactMatch
+      ? item.href === pathname
+      : item.href === pathname || (pathname !== '/' && item.href !== '/' && pathname.startsWith(item.href ?? '')),
   }));
 }
 
