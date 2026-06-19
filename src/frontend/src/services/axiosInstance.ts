@@ -11,10 +11,10 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Интерцептор для добавления токена в заголовки
+// Интерцептор для добавления токена
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token'); // Ваш ключ
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

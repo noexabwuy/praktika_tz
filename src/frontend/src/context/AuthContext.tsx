@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authService } from '../services/authService';
 import type { User } from '../types/auth.types';
 
@@ -24,26 +24,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = (token: string, userData: User) => {
+  // Используем useCallback для мемоизации (как у второго фронтендера)
+  const login = useCallback((token: string, userData: User) => {
     authService.setAuthData(token, userData);
     setUser(userData);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.logout();
     setUser(null);
-  };
+  }, []);
+
+  // Используем useMemo для оптимизации (как у второго фронтендера)
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+    }),
+    [user, isLoading, login, logout]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

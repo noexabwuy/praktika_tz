@@ -1,7 +1,7 @@
 // src/services/authService.ts
 import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '../types/auth.types';
 
-// === МОК-ДАННЫЕ ДЛЯ ТЕСТА БЕЗ БЭКЕНДА ===
+// === МОК-ДАННЫЕ ДЛЯ ТЕСТА ===
 let mockUsers: any[] = [
   {
     id: '1',
@@ -34,11 +34,9 @@ export class AuthError extends Error {
   }
 }
 
-// === ФУНКЦИЯ ДЛЯ ПРАВИЛЬНОГО КОДИРОВАНИЯ В BASE64 (поддерживает UTF-8) ===
+// Функция для правильного кодирования в Base64 (поддерживает UTF-8)
 function utf8ToBase64(str: string): string {
-  // Кодируем строку в UTF-8
   const utf8Bytes = new TextEncoder().encode(str);
-  // Преобразуем в строку для btoa
   let binaryString = '';
   for (let i = 0; i < utf8Bytes.length; i++) {
     binaryString += String.fromCharCode(utf8Bytes[i]);
@@ -46,20 +44,11 @@ function utf8ToBase64(str: string): string {
   return btoa(binaryString);
 }
 
-function base64ToUtf8(base64: string): string {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return new TextDecoder().decode(bytes);
-}
-
-// API URL (для реального бэкенда)
+// API URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const authService = {
-  // === РЕАЛЬНЫЙ ЗАПРОС ЧЕРЕЗ FETCH (когда бэкенд готов) ===
+  // === РЕАЛЬНЫЙ ЗАПРОС ЧЕРЕЗ FETCH ===
   loginReal: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -116,11 +105,10 @@ export const authService = {
       throw new AuthError('Неверный логин или пароль', 'login');
     }
 
-    // === ИСПРАВЛЕННАЯ ГЕНЕРАЦИЯ ТОКЕНА (с поддержкой UTF-8) ===
-    const tokenData = JSON.stringify({ 
-      userId: user.id, 
-      login: user.login, 
-      exp: Date.now() + 3600000 
+    const tokenData = JSON.stringify({
+      userId: user.id,
+      login: user.login,
+      exp: Date.now() + 3600000,
     });
     const token = utf8ToBase64(tokenData);
 
@@ -165,11 +153,10 @@ export const authService = {
 
     mockUsers.push(newUser);
 
-    // === ИСПРАВЛЕННАЯ ГЕНЕРАЦИЯ ТОКЕНА (с поддержкой UTF-8) ===
-    const tokenData = JSON.stringify({ 
-      userId: newUser.id, 
-      login: newUser.login, 
-      exp: Date.now() + 3600000 
+    const tokenData = JSON.stringify({
+      userId: newUser.id,
+      login: newUser.login,
+      exp: Date.now() + 3600000,
     });
     const token = utf8ToBase64(tokenData);
 

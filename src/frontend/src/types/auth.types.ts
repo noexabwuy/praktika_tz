@@ -1,3 +1,4 @@
+// src/types/auth.types.ts
 export interface LoginCredentials {
   login: string;
   password: string;
@@ -16,7 +17,9 @@ export interface User {
   fullName: string;
   login: string;
   email: string;
-  role: 'admin' | 'manager' | 'user';
+  role: 'admin' | 'manager' | 'user'; // Ваши роли
+  // Если нужны роли второго фронтендера, раскомментируйте:
+  // role: 'admin' | 'manager' | 'user' | 'Applicant' | 'Director';
 }
 
 export interface AuthResponse {
