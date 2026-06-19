@@ -38,7 +38,7 @@ export const useAuthActions = () => {
     setIsLoading(true);
     setError(null);
 
-    // === ПРОВЕРКА СОВПАДЕНИЯ ПАРОЛЕЙ ===
+    // Проверка совпадения паролей
     if (credentials.password !== credentials.confirmPassword) {
       setError({
         message: 'Пароли не совпадают',

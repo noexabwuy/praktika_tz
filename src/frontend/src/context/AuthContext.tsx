@@ -1,63 +1,85 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { authService } from '../services/authService';
-import type { User } from '../types/auth.types';
+// src/context/AuthContext.tsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
+export interface AuthUser {
+  id: string;
+  fullName: string;
+  login: string;
+  email: string;
+  role: 'Applicant' | 'Manager' | 'Admin' | 'Director';
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface AuthState {
+  user: AuthUser | null;
+  token: string | null;
+  isLoading: boolean;
+}
+
+interface AuthContextValue extends AuthState {
+  login: (token: string, user: AuthUser) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
+}
+
+const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'auth_user';
+
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    token: null,
+    isLoading: true,
+  });
 
   useEffect(() => {
-    const storedUser = authService.getUser();
-    if (storedUser && authService.isAuthenticated()) {
-      setUser(storedUser);
-    }
-    setIsLoading(false);
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      const raw = localStorage.getItem(USER_KEY);
+      if (token && raw) {
+        const user = JSON.parse(raw) as AuthUser;
+        setState({ token, user, isLoading: false });
+        return;
+      }
+    } catch {}
+    setState({ token: null, user: null, isLoading: false });
   }, []);
 
-  // Используем useCallback для мемоизации (как у второго фронтендера)
-  const login = useCallback((token: string, userData: User) => {
-    authService.setAuthData(token, userData);
-    setUser(userData);
+  const login = useCallback((token: string, user: AuthUser) => {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    setState({ token, user, isLoading: false });
   }, []);
 
   const logout = useCallback(() => {
-    authService.logout();
-    setUser(null);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    setState({ token: null, user: null, isLoading: false });
   }, []);
 
-  // Используем useMemo для оптимизации (как у второго фронтендера)
-  const value = useMemo<AuthContextType>(
+  const value = useMemo<AuthContextValue>(
     () => ({
-      user,
-      isAuthenticated: !!user,
-      isLoading,
+      ...state,
       login,
       logout,
+      isAuthenticated: !!state.token && !!state.user,
     }),
-    [user, isLoading, login, logout]
+    [state, login, logout],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
+  return ctx;
+}

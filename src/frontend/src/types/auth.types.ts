@@ -1,4 +1,14 @@
 // src/types/auth.types.ts
+export type UserRole = 'Applicant' | 'Manager' | 'Admin' | 'Director';
+
+export interface User {
+  id: string;
+  fullName: string;
+  login: string;
+  email: string;
+  role: UserRole;
+}
+
 export interface LoginCredentials {
   login: string;
   password: string;
@@ -10,16 +20,6 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   confirmPassword: string;
-}
-
-export interface User {
-  id: string;
-  fullName: string;
-  login: string;
-  email: string;
-  role: 'admin' | 'manager' | 'user'; // Ваши роли
-  // Если нужны роли второго фронтендера, раскомментируйте:
-  // role: 'admin' | 'manager' | 'user' | 'Applicant' | 'Director';
 }
 
 export interface AuthResponse {

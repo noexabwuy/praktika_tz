@@ -1,7 +1,11 @@
 // src/services/authService.ts
-import type { LoginCredentials, RegisterCredentials, AuthResponse, User } from '../types/auth.types';
+import type { LoginCredentials, RegisterCredentials, AuthResponse, User, UserRole } from '../types/auth.types';
 
-// === МОК-ДАННЫЕ ДЛЯ ТЕСТА ===
+// === КОНСТАНТЫ (как у второго фронтендера) ===
+const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'auth_user';
+
+// === МОК-ДАННЫЕ ===
 let mockUsers: any[] = [
   {
     id: '1',
@@ -9,7 +13,7 @@ let mockUsers: any[] = [
     login: 'admin',
     email: 'admin@example.com',
     password: 'admin123',
-    role: 'admin',
+    role: 'Admin',
   },
   {
     id: '2',
@@ -17,7 +21,23 @@ let mockUsers: any[] = [
     login: 'ivanov',
     email: 'ivanov@example.com',
     password: 'ivanov123',
-    role: 'user',
+    role: 'Applicant',
+  },
+  {
+    id: '3',
+    fullName: 'Петров Петр',
+    login: 'manager',
+    email: 'manager@example.com',
+    password: 'manager123',
+    role: 'Manager',
+  },
+  {
+    id: '4',
+    fullName: 'Сидорова Анна',
+    login: 'director',
+    email: 'director@example.com',
+    password: 'director123',
+    role: 'Director',
   },
 ];
 
@@ -142,13 +162,18 @@ export const authService = {
       throw new AuthError('Пароль должен содержать минимум 6 символов', 'password');
     }
 
+    // Проверка совпадения паролей (дублируем для надежности)
+    if (credentials.password !== credentials.confirmPassword) {
+      throw new AuthError('Пароли не совпадают', 'confirmPassword');
+    }
+
     const newUser = {
       id: String(mockUsers.length + 1),
       fullName: credentials.fullName,
       login: credentials.login,
       email: credentials.email,
       password: credentials.password,
-      role: 'user' as const,
+      role: 'Applicant' as const,
     };
 
     mockUsers.push(newUser);
@@ -172,30 +197,30 @@ export const authService = {
     };
   },
 
-  // === РАБОТА С LOCALSTORAGE ===
+  // === РАБОТА С LOCALSTORAGE (используем те же константы) ===
   setAuthData: (token: string, user: User): void => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 
   getToken: (): string | null => {
-    return localStorage.getItem('token');
+    return localStorage.getItem(TOKEN_KEY);
   },
 
   getUser: (): User | null => {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem(USER_KEY);
     return user ? JSON.parse(user) : null;
   },
 
   logout: (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   },
 
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem(TOKEN_KEY);
   },
 
   // === ДЛЯ ПЕРЕКЛЮЧЕНИЯ МЕЖДУ МОК И РЕАЛЬНЫМ API ===
-  useRealAPI: false, // Установите true, когда бэкенд готов
+  useRealAPI: false,
 };
