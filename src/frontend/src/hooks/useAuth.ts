@@ -47,6 +47,16 @@ export const useAuthActions = () => {
       return false;
     }
 
+    // Проверка длины пароля (минимум 8 символов для соответствия бэкенду)
+    if (credentials.password.length < 8) {
+      setError({
+        message: 'Пароль должен содержать минимум 8 символов',
+        field: 'password',
+      });
+      setIsLoading(false);
+      return false;
+    }
+
     try {
       const response = await authService.register(credentials);
       login(response.token, response.user);
