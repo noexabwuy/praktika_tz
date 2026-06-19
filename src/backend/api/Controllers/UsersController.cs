@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models.DTOs;
-using api.Models.Enums;
 
 namespace api.Controllers
 {
+    /// <summary>
+    /// Контроллер для управления пользователями (доступен только для Manager, Admin, Director)
+    /// </summary>
     [ApiController]
     [Route("api/users")]
     [Authorize(Roles = "Manager,Admin,Director")]  // Только эти роли имеют доступ
@@ -19,25 +21,53 @@ namespace api.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Получение списка пользователей с возможностью фильтрации по роли
+        /// </summary>
+        /// <param name="role">Фильтр по роли пользователя (например: Director, Admin, Manager, Applicant)</param>
+        /// <returns>Список пользователей в формате UserResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Получать списки пользователей могут только Manager, Admin и Director
+        ///
+        /// Примеры запросов:
+        /// - GET /api/users — получить всех пользователей
+        /// - GET /api/users?role=Director — получить всех директоров
+        /// - GET /api/users?role=Admin — получить всех администраторов
+        /// - GET /api/users?role=Manager — получить всех менеджеров
+        /// - GET /api/users?role=Applicant — получить всех заявителей
+        /// </remarks>
+        /// <response code="200">Успешное получение списка пользователей</response>
+        /// <response code="400">Передана недопустимая роль</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Manager, Admin или Director)</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<UserResponseDto>), 200)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
-
-        // GET /api/users - вызов всех
-        // GET /api/users?role=Director - вызов всех директоров
-        // GET /api/users?role=Admin - вызов всех администраторов
-        // GET /api/users?role=Manager - вызов всех менеджеров
-        // GET /api/users?role=Applicant - вызов всех заявителей
-        public async Task<IActionResult> GetUsers([FromQuery] UserRole? role = null)
+        public async Task<IActionResult> GetUsers([FromQuery] string? role = null)
         {
             // Базовый запрос
             var query = _context.Users.AsQueryable();
 
-            if (role.HasValue)
+            // Фильтр по роли (если передан)
+            if (!string.IsNullOrEmpty(role))
             {
-                var roleString = role.Value.ToString();
-                query = query.Where(u => u.Role == roleString);
+                // Список допустимых ролей
+                var validRoles = new[] { "Manager", "Admin", "Director", "Applicant" };
+
+                // Проверка, что переданная роль допустима
+                if (!validRoles.Contains(role, StringComparer.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Недопустимое значение роли '{role}'. Допустимые значения: {string.Join(", ", validRoles)}"
+                    });
+                }
+
+                // Применяем фильтр (регистронезависимо)
+                query = query.Where(u => u.Role.ToLower() == role.ToLower());
             }
 
             // Выполнение запроса и преобразование в DTO

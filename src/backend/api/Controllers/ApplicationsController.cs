@@ -10,6 +10,9 @@ using api.Models.Entities;
 
 namespace api.Controllers
 {
+    /// <summary>
+    /// Контроллер для управления учебными заявками
+    /// </summary>
     [ApiController]
     [Route("api/applications")]
     [Authorize]
@@ -22,11 +25,32 @@ namespace api.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Получение списка заявок с фильтрацией
+        /// </summary>
+        /// <param name="my">
+        /// Фильтр по принадлежности заявки текущему пользователю:
+        /// - true — только свои заявки (по умолчанию)
+        /// - false — все заявки (только для ролей: Admin, Manager, Director)
+        /// </param>
+        /// <param name="status">Фильтр по статусу заявки (например: New, InProgress, NeedsInfo, Approved, Rejected, Completed)</param>
+        /// <param name="directionId">Фильтр по идентификатору направления подготовки</param>
+        /// <param name="formatId">Фильтр по идентификатору формата обучения</param>
+        /// <param name="fromDate">Начальная дата создания заявки (включительно)</param>
+        /// <param name="toDate">Конечная дата создания заявки (включительно)</param>
+        /// <returns>Список заявок в формате ApplicationResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Просмотр своих заявок (my = true) доступен всем авторизированным пользователям
+        /// - Просмотр всех заявок (my = false) доступен только для ролей: Admin, Manager, Director
+        /// </remarks>
+        /// <response code="200">Успешное получение списка заявок</response>
+        /// <response code="401">Пользователь не авторизован или не удалось определить UserId из токена</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<ApplicationResponseDto>), 200)]
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetApplications(
-            [FromQuery] bool my = false,
+            [FromQuery] bool my = true,
             [FromQuery] string? status = null,
             [FromQuery] Guid? directionId = null,
             [FromQuery] Guid? formatId = null,
@@ -40,7 +64,19 @@ namespace api.Controllers
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
 
-            // Базовый запрос с подгрузкой связанных данных
+            // Получаем роль пользователя
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            // Если my = false — проверяем, что пользователь имеет одну из разрешённых ролей
+            if (!my)
+            {
+                var allowedRoles = new[] { "Admin", "Manager", "Director" };
+                if (userRole == null || !allowedRoles.Contains(userRole))
+                {
+                    return Forbid(); // 403 - не достаточно прав доступа
+                }
+            }
+
             var query = _context.Applications
                 .Include(a => a.Direction)
                 .Include(a => a.Format)
@@ -115,6 +151,15 @@ namespace api.Controllers
         /// <summary>
         /// Создание новой учебной заявки
         /// </summary>
+        /// <param name="dto">Данные для создания заявки (название, описание, направление подготовки, формат обучения)</param>
+        /// <returns>Созданная заявка в формате ApplicationResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно всем авторизированным пользователям
+        /// </remarks>
+        /// <response code="201">Заявка успешно создана</response>
+        /// <response code="400">Некорректные данные запроса или указаны несуществующие направление/формат</response>
+        /// <response code="401">Пользователь не авторизован или не удалось определить UserId из токена</response>
         [HttpPost]
         [ProducesResponseType(typeof(ApplicationResponseDto), 201)]
         [ProducesResponseType(400)]
@@ -200,11 +245,27 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// PATCH /api/applications/{id}/assign
         /// Назначение ответственного менеджера на заявку
         /// </summary>
+        /// <param name="id">Идентификатор заявки</param>
+        /// <param name="dto">Данные с идентификатором назначаемого менеджера</param>
+        /// <returns>Обновлённая заявка в формате ApplicationResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступ имеет только Manager
+        /// </remarks>
+        /// <response code="200">Менеджер успешно назначен</response>
+        /// <response code="400">Указанный пользователь не найден или не является менеджером</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Текущий пользователь не имеет роли Manager</response>
+        /// <response code="404">Заявка с указанным ID не найдена</response>
         [Authorize(Roles = "Manager")]
         [HttpPatch("{id}/assign")]
+        [ProducesResponseType(typeof(ApplicationResponseDto), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> AssignApplication(Guid id, [FromBody] AssignApplicationRequestDto dto)
         {
             var application = await _context.Applications
@@ -276,11 +337,27 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// PATCH /api/applications/{id}/status
         /// Изменение статуса заявки менеджером
         /// </summary>
+        /// <param name="id">Идентификатор заявки</param>
+        /// <param name="dto">Новый статус заявки (например: New, InProgress, NeedsInfo, Approved, Rejected, Completed)</param>
+        /// <returns>Обновлённая заявка в формате ApplicationResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступ имеет только Manager
+        /// </remarks>
+        /// <response code="200">Статус успешно обновлён</response>
+        /// <response code="400">Некорректный запрос: финальный статус без назначенного менеджера</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Текущий пользователь не имеет роли Manager</response>
+        /// <response code="404">Заявка с указанным ID не найдена</response>
         [Authorize(Roles = "Manager")]
         [HttpPatch("{id}/status")]
+        [ProducesResponseType(typeof(ApplicationResponseDto), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateApplicationStatusRequestDto dto)
         {
             var application = await _context.Applications
@@ -344,8 +421,21 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// СИСТЕМА КОММЕНТАРИЕВ (POST /api/applications/{id}/comments)
+        /// Добавление комментария к заявке
         /// </summary>
+        /// <param name="id">Идентификатор заявки</param>
+        /// <param name="dto">Текст комментария</param>
+        /// <returns>Созданный комментарий в формате CommentResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Applicant может комментировать только свои заявки
+        /// - Manager, Admin и Director могут комментировать любые заявки
+        /// </remarks>
+        /// <response code="200">Комментарий успешно добавлен</response>
+        /// <response code="400">Некорректные данные запроса</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав для добавления комментария к этой заявке</response>
+        /// <response code="404">Заявка с указанным ID не найдена</response>
         [HttpPost("{id}/comments")]
         [ProducesResponseType(typeof(CommentResponseDto), 200)]
         [ProducesResponseType(400)]
@@ -406,8 +496,19 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// ПОЛУЧЕНИЕ КОММЕНТАРИЕВ (GET /api/applications/{id}/comments)
+        /// Получение всех комментариев к заявке
         /// </summary>
+        /// <param name="id">Идентификатор заявки</param>
+        /// <returns>Список комментариев в формате CommentResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Applicant может просматривать комментарии только к своей заявке
+        /// - Manager, Admin и Director могут просматривать комментарии к любым заявкам
+        /// </remarks>
+        /// <response code="200">Успешное получение списка комментариев</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав для просмотра комментариев к этой заявке</response>
+        /// <response code="404">Заявка с указанным ID не найдена</response>
         [HttpGet("{id}/comments")]
         [ProducesResponseType(typeof(List<CommentResponseDto>), 200)]
         [ProducesResponseType(401)]

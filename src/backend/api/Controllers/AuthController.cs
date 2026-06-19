@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace api.Controllers
 {
+    /// <summary>
+    /// Контроллер для аутентификации и регистрации пользователей
+    /// </summary>
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
@@ -26,8 +29,16 @@ namespace api.Controllers
             _configuration = configuration;
         }
 
-        // 1. ЭНДПОИНТ РЕГИСТРАЦИИ
+        /// <summary>
+        /// Регистрация нового пользователя
+        /// </summary>
+        /// <param name="dto">Данные для регистрации (логин, пароль, ФИО, email)</param>
+        /// <returns>Информация о зарегистрированном пользователе</returns>
+        /// <response code="200">Регистрация успешно завершена</response>
+        /// <response code="400">Некорректные данные запроса (логин/пароль пустые, пароль слишком короткий/длинный, логин уже занят)</response>
         [HttpPost("register")]
+        [ProducesResponseType(typeof(object), 200)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Login) || string.IsNullOrWhiteSpace(dto.Password))
@@ -77,8 +88,16 @@ namespace api.Controllers
             return Ok(new { message = "Регистрация успешна!", user = userDto });
         }
 
-        // 2. ЭНДПОИНТ ВХОДА
+        /// <summary>
+        /// Вход пользователя в систему
+        /// </summary>
+        /// <param name="dto">Данные для входа (логин и пароль)</param>
+        /// <returns>JWT-токен и информация о пользователе</returns>
+        /// <response code="200">Успешный вход, возвращён JWT-токен</response>
+        /// <response code="401">Неверный логин или пароль</response>
         [HttpPost("login")]
+        [ProducesResponseType(typeof(AuthResponseDto), 200)]
+        [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Login.ToLower() == dto.Login.ToLower());
@@ -106,7 +125,11 @@ namespace api.Controllers
             });
         }
 
-        // Вспомогательный метод генерации JWT
+        /// <summary>
+        /// Генерация JWT-токена для пользователя
+        /// </summary>
+        /// <param name="user">Пользователь, для которого генерируется токен</param>
+        /// <returns>Строка JWT-токена</returns>
         private string GenerateJwtToken(User user)
         {
             var secretKey = Environment.GetEnvironmentVariable("JwtSettings__Secret") ?? _configuration["JwtSettings:Secret"];
