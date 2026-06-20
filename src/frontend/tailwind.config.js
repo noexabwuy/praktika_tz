@@ -48,6 +48,7 @@ export default {
         'xs': '2px',
         'sm': '4px',
         'base': '6px',
+        'md': '12px',
         'none': '0px',
       },
       spacing: {
