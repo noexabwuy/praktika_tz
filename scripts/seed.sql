@@ -22,12 +22,12 @@ ON CONFLICT ("Id") DO NOTHING;
 
 INSERT INTO "Users" ("Id", "FullName", "Login", "Email", "PasswordHash", "Role", "CreatedAt")
 VALUES
-    ('11111111-1111-1111-1111-111111111111', 'Директор',      'director',  'director@training.ru',  '$2a$11$A79di02TfVx8CTFeKySkMOuwniKJyrzPjkVDX5u3W7yLTJHDpFlLi', 'Director',   NOW()),
-    ('22222222-2222-2222-2222-222222222222', 'Администратор',  'admin',     'admin@training.ru',     '$2a$11$nG1jLazyTatq6BXJDaT0xuBwZUgpzyqXdsIeY3mWa3xfcF3gTB.6e', 'Admin',      '2026-01-01 00:00:00'),
-    ('33333333-3333-3333-3333-333333333333', 'Иванов Иван',    'ivanov',    'ivanov@training.ru',    '$2a$11$b5rAdGVnIRSVtao2VxtHc.33HR9gSNsT.a2HEvNlyF0OjDrvbPHbK', 'Manager',    '2026-01-01 00:00:00'),
-    ('33333333-3333-3333-3333-333333333334', 'Смирнова Анна',  'smirnova',  'smirnova@training.ru',  '$2a$11$EArRBncX.U8WSrs57WfpqeW0g4gUKEJYQlEO1kIv/ftt2L2GMiNPq', 'Manager',    '2026-01-01 00:00:00'),
-    ('44444444-4444-4444-4444-444444444444', 'Петрова Мария',  'petrova',   'petrova@training.ru',   '$2a$11$WEZSDCaMR3wm6IomklF4c.F8aFVNDBJU5yHMoefOZ2iNgGwJqFpRK', 'Applicant',  '2026-01-01 00:00:00'),
-    ('44444444-4444-4444-4444-444444444445', 'Сидоров Павел',  'sidorov',   'sidorov@training.ru',   '$2a$11$CcnGerNuWyXd0vJcJPqkUeH.fUNpPf1a36LK11EatzIbDr78dw.xK', 'Applicant',  '2026-01-01 00:00:00')
+    ('11111111-1111-1111-1111-111111111111', 'Директор',      'director',  'director@training.ru',  '$2a$12$DhOEwS73k0dbUWY.adRq1.fhqIG9NtP689KX0v2ZGkZjhUsWcTl/O', 'Director',   NOW()),
+    ('22222222-2222-2222-2222-222222222222', 'Администратор',  'admin',     'admin@training.ru',     '$2a$12$F.NTlj/33k7Aa9Swv0mSjOvII9ikOu19RsgNk/58JP4CBgtiMQlBq', 'Admin',      '2026-01-01 00:00:00'),
+    ('33333333-3333-3333-3333-333333333333', 'Иванов Иван',    'ivanov',    'ivanov@training.ru',    '$2a$12$3XipTlIoh7IxJx3eW0lXDeyTktekE.zskKNZjYCoVwXcvu/M5PU0q', 'Manager',    '2026-01-01 00:00:00'),
+    ('33333333-3333-3333-3333-333333333334', 'Смирнова Анна',  'smirnova',  'smirnova@training.ru',  '$2a$12$/YUg6by5Znl.7FKUqM9pvep/U9rAQI2QX6RV/fp9eNFURRsEtujBW', 'Manager',    '2026-01-01 00:00:00'),
+    ('44444444-4444-4444-4444-444444444444', 'Петрова Мария',  'petrova',   'petrova@training.ru',   '$2a$12$JQ4YibNZsX2NxoB6vC/Pg.65gl3AbJCsoY7JBl6CCp/QjpjQTzfey', 'Applicant',  '2026-01-01 00:00:00'),
+    ('44444444-4444-4444-4444-444444444445', 'Сидоров Павел',  'sidorov',   'sidorov@training.ru',   '$2a$12$q05dGQXPADI9GT2z.rzb.etH4lVu08kXAhjeljarViKfP6c/ofthO', 'Applicant',  '2026-01-01 00:00:00')
 ON CONFLICT ("Id") DO NOTHING;
 
 
