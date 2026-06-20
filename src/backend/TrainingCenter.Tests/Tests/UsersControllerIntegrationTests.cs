@@ -21,9 +21,9 @@ namespace TrainingCenter.Tests.Tests
             _context = TestDatabaseHelper.CreateAndSeedDatabase();
         }
 
-        // Сценарий: Администратор логинится, получает токен, вызывает API с фильтром ?role=Admin
-        // Ожидаемый результат: Возвращается 1 пользователь с ролью Admin
-        // Код ответа: 200 OK
+        // РЎС†РµРЅР°СЂРёР№: РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ Р»РѕРіРёРЅРёС‚СЃСЏ, РїРѕР»СѓС‡Р°РµС‚ С‚РѕРєРµРЅ, РІС‹Р·С‹РІР°РµС‚ API СЃ С„РёР»СЊС‚СЂРѕРј ?role=Admin
+        // РћР¶РёРґР°РµРјС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚: Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 1 РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ СЂРѕР»СЊСЋ Admin
+        // РљРѕРґ РѕС‚РІРµС‚Р°: 200 OK
         [Fact]
         public async Task GetUsers_WithAdminToken_AndFilterByRole_ReturnsFilteredUsers()
         {
@@ -47,9 +47,9 @@ namespace TrainingCenter.Tests.Tests
             users[0].Role.Should().Be("Admin");
         }
 
-        // Сценарий: Директор логинится, получает токен, вызывает API с фильтром ?role=Director
-        // Ожидаемый результат: Возвращается 1 пользователь с ролью Director
-        // Код ответа: 200 OK
+        // РЎС†РµРЅР°СЂРёР№: Р”РёСЂРµРєС‚РѕСЂ Р»РѕРіРёРЅРёС‚СЃСЏ, РїРѕР»СѓС‡Р°РµС‚ С‚РѕРєРµРЅ, РІС‹Р·С‹РІР°РµС‚ API СЃ С„РёР»СЊС‚СЂРѕРј ?role=Director
+        // РћР¶РёРґР°РµРјС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚: Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 1 РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ СЂРѕР»СЊСЋ Director
+        // РљРѕРґ РѕС‚РІРµС‚Р°: 200 OK
         [Fact]
         public async Task GetUsers_WithDirectorToken_AndFilterByRole_ReturnsFilteredUsers()
         {
@@ -73,9 +73,9 @@ namespace TrainingCenter.Tests.Tests
             users[0].Role.Should().Be("Director");
         }
 
-        // Сценарий: Менеджер логинится, получает токен, вызывает API с фильтром ?role=Manager
-        // Ожидаемый результат: Возвращается 1 пользователь с ролью Manager
-        // Код ответа: 200 OK
+        // РЎС†РµРЅР°СЂРёР№: РњРµРЅРµРґР¶РµСЂ Р»РѕРіРёРЅРёС‚СЃСЏ, РїРѕР»СѓС‡Р°РµС‚ С‚РѕРєРµРЅ, РІС‹Р·С‹РІР°РµС‚ API СЃ С„РёР»СЊС‚СЂРѕРј ?role=Manager
+        // РћР¶РёРґР°РµРјС‹Р№ СЂРµР·СѓР»СЊС‚Р°С‚: Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ 1 РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ СЂРѕР»СЊСЋ Manager
+        // РљРѕРґ РѕС‚РІРµС‚Р°: 200 OK
         [Fact]
         public async Task GetUsers_WithManagerToken_AndFilterByRole_ReturnsFilteredUsers()
         {

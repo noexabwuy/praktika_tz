@@ -39,10 +39,10 @@ namespace TrainingCenter.Tests.Helpers
             if (loginResult is OkObjectResult okResult)
             {
                 var response = okResult.Value as AuthResponseDto;
-                return response?.Token ?? throw new Exception("Токен отсутствует.");
+                return response?.Token ?? throw new Exception("РўРѕРєРµРЅ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚.");
             }
 
-            throw new Exception("Не удалось получить токен.");
+            throw new Exception("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ С‚РѕРєРµРЅ.");
         }
     }
 }
