@@ -58,6 +58,15 @@ export default {
         'lg': '24px',
         'xl': '48px',
       },
+      keyframes: {
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+      },
+      animation: {
+        scaleIn: 'scaleIn 0.2s ease-out forwards',
+      },
     },
   },
   plugins: [],
