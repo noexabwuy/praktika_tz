@@ -10,6 +10,9 @@ using api.Models.DTOs;
 
 namespace api.Controllers
 {
+    /// <summary>
+    /// Контроллер для получения аналитической информации по заявкам и пользователям
+    /// </summary>
     [ApiController]
     [Route("api/analytics")]
     [Authorize(Roles = "Director,Admin")]
@@ -22,6 +25,24 @@ namespace api.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Получение сводной статистики по заявкам и пользователям
+        /// </summary>
+        /// <returns>Объект AnalyticsStatisticsDto со статистическими данными</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Просмотр статистики доступен только Admin и Director
+        /// 
+        /// Возвращает следующие данные:
+        /// - Общее количество заявок
+        /// - Общее количество зарегистрированных пользователей
+        /// - Распределение заявок по статусам
+        /// - Распределение заявок по направлениям подготовки
+        /// - Распределение заявок по форматам обучения
+        /// </remarks>
+        /// <response code="200">Успешное получение статистических данных</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Director или Admin)</response>
         [HttpGet("statistics")]
         [ProducesResponseType(typeof(AnalyticsStatisticsDto), 200)]
         [ProducesResponseType(401)]
