@@ -1,92 +1,64 @@
 # Архитектура проекта
 
-## Стек
+## Технологический стек
 
-| Слой | Технология |
-|---|---|
-| Frontend | React 19 + Vite, TypeScript, Tailwind CSS 3, Nginx |
-| Backend | ASP.NET Core 8, EF Core 8, BCrypt.Net |
+| Слой | Технологии |
+|--------|------------|
+| Frontend | React 19, Vite 8, TypeScript 6, Tailwind CSS 3.4, React Router 7, Axios |
+| Backend | ASP.NET Core 8, EF Core 7 (Npgsql), BCrypt.Net-Next |
 | База данных | PostgreSQL 15 |
-| Инфраструктура | Docker Compose, GitHub Actions CI |
-| Документация API | Swagger / OpenAPI |
+| Инфраструктура | Docker Compose, GitHub Actions |
+| API-документация | Swagger / OpenAPI |
 
 ---
 
-## Как всё работает вместе
+## Схема взаимодействия
 
 ```mermaid
 graph TB
-    User["Пользователь\nбраузер"]
+    User["Пользователь"]
 
     subgraph "Docker Compose"
-        FE["frontend\nNginx :3000"]
-        BE["backend\nASP.NET Core :5071"]
-        DB["db\nPostgreSQL :5432"]
+        FE["Frontend :3000"]
+        BE["Backend :5071"]
+        DB["PostgreSQL :5432"]
     end
 
-    User -->|"localhost:3000"| FE
-    User -->|"localhost:5071/api/*"| BE
-    BE -->|"EF Core / Npgsql"| DB
+    User --> FE
+    User --> BE
+    BE --> DB
 ```
-
-Пользователь открывает `localhost:3000`, после чего Nginx отдаёт SPA. API-запросы фронтенд отправляет напрямую на бэкенд `localhost:5071/api`. Бэкенд работает с БД через EF Core.
-
----
-
-## Архитектура бэкенда
-
-```mermaid
-graph LR
-    REQ["HTTP запрос"] --> CTR["Controller\n/api/..."]
-    CTR --> CTX["DbContext\nEF Core"]
-    CTX --> DB["PostgreSQL"]
-    CTR --> RES["HTTP ответ\nDTO"]
-```
-
-**Controller** - принимает запросы, валидирует данные, работает с DbContext, возвращает DTO.
-
-**DbContext** - маппинг моделей на таблицы, миграции, запросы через LINQ.
-
-**DTO** - отдельные классы для входящих запросов и исходящих ответов. Entity наружу не отдаются.
-
-### Контроллеры
-
-| Контроллер | Маршрут | Доступ |
-|---|---|---|
-| `AuthController` | `/api/auth` | Публичный |
-| `ApplicationsController` | `/api/applications` | Все роли |
-| `DictionariesController` | `/api/dictionaries` | GET - все, POST/PUT/DELETE - Admin |
-| `UsersController` | `/api/users` | Manager, Admin, Director |
-| `AnalyticsController` | `/api/analytics` | Director |
 
 ### Авторизация
 
-JWT-токен передаётся в заголовке каждого запроса:
-```
-Authorization: Bearer <token>
-```
-
-Токен содержит Id пользователя, логин и роль. Доступ ограничивается через `[Authorize(Roles = "Admin")]`.
+- JWT Bearer
+- Срок жизни токена: 7 дней
+- Токен содержит:
+  - идентификатор пользователя;
+  - логин;
+  - роль.
+- Ролевая авторизация реализована через атрибуты `[Authorize(Roles = "...")]`.
 
 ---
 
 ## Структура проекта
 
-```
-├── .github/workflows/
-│   └── ci.yml
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── src/
-│   ├── backend/
-│   │   └── api/
-│   │       ├── Controllers/
-│   │       ├── Data/
-│   │       ├── Migrations/
-│   │       ├── Models/
-│   │       │   ├── Entities/
-│   │       │   ├── DTOs/
-│   │       │   └── Enums/
-│   │       ├── Dockerfile
-│   │       └── Program.cs
+│   ├── backend/api/
+│   │   ├── Controllers/
+│   │   ├── Data/
+│   │   ├── Migrations/
+│   │   ├── Models/
+│   │   │   ├── Entities/
+│   │   │   └── DTOs/
+│   │   ├── Dockerfile
+│   │   ├── Program.cs
+│   │   └── appsettings.json
 │   └── frontend/
 │       ├── src/
 │       │   ├── components/
@@ -111,72 +83,151 @@ Authorization: Bearer <token>
 
 ---
 
-## Запуск проекта
+## База данных
 
-### Локальная разработка
+### Таблицы
 
-```bash
-# БД
-docker compose up db -d
+| Таблица | Назначение |
+|----------|------------|
+| `Users` | Пользователи |
+| `Applications` | Заявки на обучение |
+| `Directions` | Направления подготовки |
+| `TrainingFormats` | Форматы обучения |
+| `Comments` | Комментарии к заявкам |
+| `StatusHistories` | История изменения статусов |
+| `AuditLogs` | Журнал аудита действий |
 
-# Бэкенд
-cd src/backend/api
-dotnet run
+### Особенности
 
-# Фронтенд
-cd src/frontend
-npm install
-npm run dev
-```
-
-### Через Docker
-
-```bash
-cp .env.example .env
-docker compose up -d --build
-```
-
-После запуска:
-- `localhost:3000` — приложение
-- `localhost:5071/swagger` — документация API
+- Все первичные ключи имеют тип `Guid` (`UUID` в PostgreSQL).
+- Связи между сущностями описаны через Data Annotations.
+- Доступ к данным реализован через EF Core.
 
 ---
 
-## Переменные окружения
+## API
 
-Хранятся в `.env` (не в git). Шаблон — `.env.example`:
+### Auth
 
-```env
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
+Базовый маршрут: `/api/auth`
 
-JWT_SECRET=
-JWT_ISSUER=AppealsBackend
-JWT_AUDIENCE=AppealsFrontend
-```
-
-Фронтенд подключается к бэкенду через `VITE_API_URL` (по умолчанию `http://localhost:5071/api`).
+| Метод | Маршрут | Описание |
+|---------|----------|----------|
+| POST | `/register` | Регистрация пользователя |
+| POST | `/login` | Аутентификация и получение JWT |
 
 ---
 
-## Docker-сборка
+### Users
 
-Оба Dockerfile используют multi-stage сборку.
+Базовый маршрут: `/api/users`
 
-**Backend** — SDK образ для сборки, ASP.NET Runtime для запуска.
+Доступ: `Manager`, `Admin`, `Director`
 
-**Frontend** — Node для сборки Vite, Nginx Alpine для раздачи статики.
-
-Nginx настроен с SPA fallback, gzip и долгосрочным кэшированием ассетов.
+| Метод | Маршрут | Описание |
+|---------|----------|----------|
+| GET | `/?role=` | Получение списка пользователей |
 
 ---
 
-## Роли пользователей
+### Applications
 
-| Роль | Что может |
-|---|---|
-| `Applicant` | Создавать заявки, смотреть свои |
-| `Manager` | Обрабатывать заявки, менять статусы, комментировать |
-| `Admin` | Управлять справочниками и пользователями |
-| `Director` | Просматривать статистику и отчёты |
+Базовый маршрут: `/api/applications`
+
+| Метод | Маршрут | Доступ |
+|---------|----------|---------|
+| GET | `/?my=&status=&directionId=&formatId=` | Все роли |
+| POST | `/` | Все роли |
+| PATCH | `/{id}/assign` | Manager |
+| PATCH | `/{id}/status` | Manager |
+| POST | `/{id}/comments` | Все роли |
+| GET | `/{id}/comments` | Все роли |
+
+---
+
+### Dictionaries
+
+Базовый маршрут: `/api/dictionaries`
+
+| Метод | Маршрут |
+|---------|----------|
+| GET, POST, PUT, DELETE | `/directions` |
+| GET, POST, PUT, DELETE | `/training-formats` |
+| GET | `/statuses` |
+
+Доступ:
+- чтение — все роли;
+- изменение справочников — `Admin`.
+
+---
+
+### Analytics
+
+Базовый маршрут: `/api/analytics`
+
+Доступ: `Director`, `Admin`
+
+| Метод | Маршрут |
+|---------|----------|
+| GET | `/statistics` |
+
+---
+
+## Роли
+
+| Роль | Возможности |
+|--------|-------------|
+| Applicant | Создание, просмотр и комментирование собственных заявок |
+| Manager | Просмотр всех заявок, назначение ответственных, изменение статусов, комментирование |
+| Admin | Управление справочниками, просмотр пользователей и статистики |
+| Director | Просмотр пользователей и аналитики |
+
+---
+
+## Статусы заявок
+
+| Код | Отображение |
+|------|-------------|
+| `New` | Новая |
+| `InProgress` | В работе |
+| `NeedsInfo` | Требуется уточнение |
+| `Approved` | Согласована |
+| `Rejected` | Отклонена |
+| `Completed` | Завершена |
+
+---
+
+## Ключевые компоненты
+
+### Backend
+
+- ASP.NET Core Web API
+- EF Core + PostgreSQL
+- JWT-аутентификация
+- Swagger
+- Автоматическое применение миграций при запуске
+
+### Frontend
+
+- React SPA
+- React Router
+- Context API для авторизации
+- Axios с JWT-интерсептором
+- Хранение токена в `localStorage`
+
+### Инфраструктура
+
+- Docker Compose:
+  - PostgreSQL
+  - Backend
+  - Frontend
+- Multi-stage Docker-сборка
+- GitHub Actions для CI
+
+### Тестирование
+
+- xUnit
+- FluentAssertions
+- Moq
+- WebApplicationFactory для интеграционных тестов
+- InMemory Provider для unit-тестов

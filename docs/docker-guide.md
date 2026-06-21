@@ -12,10 +12,10 @@
 Создайте `.env` в корне проекта рядом с `docker-compose.yml`:
 
 ```env
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=learning_center
-JWT_SECRET=your_secret_min_32_chars
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=password123
+POSTGRES_DB=training_center
+JWT_SECRET=SuperSecretKeyForJWTRolesValidation2026_MustBeLong!
 JWT_ISSUER=AppealsBackend
 JWT_AUDIENCE=AppealsFrontend
 ```
@@ -58,10 +58,10 @@ docker compose exec db psql -U $env:POSTGRES_USER -d $env:POSTGRES_DB -f /script
 
 **Если переменные не читаются — подставьте значения из `.env` напрямую:**
 ```bash
-docker compose exec db psql -U postgres -d learning_center -f /scripts/seed.sql
+docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 ```
 
-Тестовые пользователи и состав данных — в [docs/seed-data.md](seed-data.md).
+Тестовые пользователи и состав данных — в [docs/test-data.md](test-data.md).
 
 ---
 
