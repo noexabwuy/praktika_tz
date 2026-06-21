@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { TextInput, TextArea } from '../components/ui/Input';
 import { Dropdown } from '../components/ui/Dropdown';
 import { Button } from '../components/ui/Button';
+import { Alert } from '../components/ui/Alert';
 import { useApplicationDictionaries } from '../hooks/useApplicationDictionaries';
 import { useCreateApplicationForm } from '../hooks/useCreateApplicationForm';
 
@@ -25,6 +26,17 @@ export const ApplicationCreatePage: React.FC = () => {
     handleSubmit,
   } = useCreateApplicationForm();
 
+  const [showDictError, setShowDictError] = useState(true);
+  const [showSubmitError, setShowSubmitError] = useState(true);
+
+  useEffect(() => {
+    if (dictionaryError) setShowDictError(true);
+  }, [dictionaryError]);
+
+  useEffect(() => {
+    if (submitError) setShowSubmitError(true);
+  }, [submitError]);
+
   return (
     <div className="h-full flex flex-col">
 
@@ -36,25 +48,24 @@ export const ApplicationCreatePage: React.FC = () => {
       </div>
 
       {/* Ошибка загрузки справочников */}
-      {dictionaryError && (
-        <div className="mb-md p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l">
+      {dictionaryError && showDictError && (
+        <Alert variant="error" onClose={() => setShowDictError(false)} className="mb-md">
           {dictionaryError}
-        </div>
+        </Alert>
       )}
 
       {/* Ошибка отправки */}
-      {submitError && (
-        <div className="mb-md p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l">
+      {submitError && showSubmitError && (
+        <Alert variant="error" onClose={() => setShowSubmitError(false)} className="mb-md">
           {submitError}
-        </div>
+        </Alert>
       )}
 
       {/* Успешная отправка */}
       {isSuccess && (
-        <div className="mb-md p-md bg-primary-light border border-status-success/30 rounded-base text-status-success text-text-l flex items-center gap-xs">
-          <Check size={18} strokeWidth={3} className="text-status-success mr-1" />
-          <span>Заявка успешно отправлена! Перенаправление к списку...</span>
-        </div>
+        <Alert variant="success" className="mb-md">
+          Заявка успешно отправлена! Перенаправление к списку...
+        </Alert>
       )}
 
       <div className="bg-bg-card rounded-md p-lg">
