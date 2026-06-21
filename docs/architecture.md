@@ -4,10 +4,11 @@
 
 | Слой | Технология |
 |---|---|
-| Frontend | React + Vite, Nginx |
-| Backend | ASP.NET Core 8, EF Core 8 |
-| База данных | PostgreSQL 16 |
-| Инфраструктура | Docker Compose |
+| Frontend | React 19 + Vite, TypeScript, Tailwind CSS 3, Nginx |
+| Backend | ASP.NET Core 8, EF Core 8, BCrypt.Net |
+| База данных | PostgreSQL 15 |
+| Инфраструктура | Docker Compose, GitHub Actions CI |
+| Документация API | Swagger / OpenAPI |
 
 ---
 
@@ -23,12 +24,12 @@ graph TB
         DB["db\nPostgreSQL :5432"]
     end
 
-    User -->|"открывает localhost:3000"| FE
-    FE -->|"/api/* → backend:8080"| BE
+    User -->|"localhost:3000"| FE
+    User -->|"localhost:5071/api/*"| BE
     BE -->|"EF Core / Npgsql"| DB
 ```
 
-Пользователь открывает браузер на `localhost:3000`. Все запросы к API фронтенд отправляет через Nginx, который проксирует их на бэкенд. Бэкенд работает с базой данных через EF Core.
+Пользователь открывает `localhost:3000`, после чего Nginx отдаёт SPA. API-запросы фронтенд отправляет напрямую на бэкенд `localhost:5071/api`. Бэкенд работает с БД через EF Core.
 
 ---
 
@@ -37,22 +38,16 @@ graph TB
 ```mermaid
 graph LR
     REQ["HTTP запрос"] --> CTR["Controller\n/api/..."]
-    CTR --> SVC["Service\nбизнес-логика"]
-    SVC --> REP["DbContext\nEF Core"]
-    REP --> DB["PostgreSQL"]
-    SVC --> CTR
+    CTR --> CTX["DbContext\nEF Core"]
+    CTX --> DB["PostgreSQL"]
     CTR --> RES["HTTP ответ\nDTO"]
 ```
 
-### Слои
+**Controller** - принимает запросы, валидирует данные, работает с DbContext, возвращает DTO.
 
-**Controller** - принимает HTTP запросы, валидирует входные данные, возвращает ответ. Не содержит бизнес-логики.
+**DbContext** - маппинг моделей на таблицы, миграции, запросы через LINQ.
 
-**Service** - вся бизнес-логика здесь. Работает с DbContext, проверяет правила (например, нельзя удалить направление если оно используется в заявках).
-
-**DbContext (EF Core)** - маппинг моделей на таблицы БД, миграции, запросы через LINQ.
-
-**DTO** — отдельные классы для входящих запросов (`RequestDto`) и исходящих ответов (`ResponseDto`). Модели Entity наружу не отдаются.
+**DTO** - отдельные классы для входящих запросов и исходящих ответов. Entity наружу не отдаются.
 
 ### Контроллеры
 
@@ -60,54 +55,70 @@ graph LR
 |---|---|---|
 | `AuthController` | `/api/auth` | Публичный |
 | `ApplicationsController` | `/api/applications` | Все роли |
-| `DictionariesController` | `/api/dictionaries` | GET — все, POST/PUT/DELETE — Admin |
+| `DictionariesController` | `/api/dictionaries` | GET - все, POST/PUT/DELETE - Admin |
 | `UsersController` | `/api/users` | Manager, Admin, Director |
+| `AnalyticsController` | `/api/analytics` | Director |
 
 ### Авторизация
 
-Используется JWT. После входа фронтенд получает токен и отправляет его в заголовке каждого запроса:
+JWT-токен передаётся в заголовке каждого запроса:
 ```
 Authorization: Bearer <token>
 ```
 
-Токен содержит Id пользователя, логин и роль. Бэкенд проверяет роль через `[Authorize(Roles = "Admin")]`.
+Токен содержит Id пользователя, логин и роль. Доступ ограничивается через `[Authorize(Roles = "Admin")]`.
 
 ---
 
 ## Структура проекта
 
 ```
-ТЗ/
+├── .github/workflows/
+│   └── ci.yml
 ├── src/
 │   ├── backend/
 │   │   └── api/
-│   │       ├── Controllers/     # HTTP эндпоинты
-│   │       ├── Services/        # бизнес-логика
-│   │       ├── Models/
-│   │       │   ├── Entities/    # модели БД
-│   │       │   └── DTOs/        # модели запросов и ответов
+│   │       ├── Controllers/
 │   │       ├── Data/
-│   │       │   └── ApplicationDbContext.cs
+│   │       ├── Migrations/
+│   │       ├── Models/
+│   │       │   ├── Entities/
+│   │       │   ├── DTOs/
+│   │       │   └── Enums/
+│   │       ├── Dockerfile
 │   │       └── Program.cs
 │   └── frontend/
-│       └── src/
-│           ├── components/
-│           ├── pages/
-│           └── api/             # запросы к бэкенду
-├── docs/                        # документация
+│       ├── src/
+│       │   ├── components/
+│       │   ├── context/
+│       │   ├── hooks/
+│       │   ├── layouts/
+│       │   ├── pages/
+│       │   ├── services/
+│       │   ├── types/
+│       │   └── utils/
+│       ├── Dockerfile
+│       └── nginx.conf
+├── tests/
+│   └── TrainingCenter.Tests/
+├── scripts/
+│   └── seed.sql
+├── docs/
 ├── docker-compose.yml
-└── .env.example
+├── .env.example
+└── README.md
 ```
 
 ---
 
 ## Запуск проекта
 
-### Локальная разработка (без Docker)
-
-Каждый запускает свою часть отдельно:
+### Локальная разработка
 
 ```bash
+# БД
+docker compose up db -d
+
 # Бэкенд
 cd src/backend/api
 dotnet run
@@ -118,19 +129,14 @@ npm install
 npm run dev
 ```
 
-БД при этом -  локальный PostgreSQL или Docker только для БД:
-```bash
-docker compose up db -d
-```
-
-### Полный запуск через Docker
+### Через Docker
 
 ```bash
-cp .env.example .env      # заполнить переменные
+cp .env.example .env
 docker compose up -d --build
 ```
 
-После запуска доступно:
+После запуска:
 - `localhost:3000` — приложение
 - `localhost:5071/swagger` — документация API
 
@@ -138,16 +144,32 @@ docker compose up -d --build
 
 ## Переменные окружения
 
-Все секреты хранятся в `.env` файле (не в git). Шаблоном является `.env.example`:
+Хранятся в `.env` (не в git). Шаблон — `.env.example`:
 
 ```env
-POSTGRES_DB=learning_center
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=           # заполнить локально
-JwtSettings__Secret=         # минимум 32 символа
-JwtSettings__Issuer=AppealsBackend
-JwtSettings__Audience=AppealsFrontend
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+
+JWT_SECRET=
+JWT_ISSUER=AppealsBackend
+JWT_AUDIENCE=AppealsFrontend
 ```
+
+Фронтенд подключается к бэкенду через `VITE_API_URL` (по умолчанию `http://localhost:5071/api`).
+
+---
+
+## Docker-сборка
+
+Оба Dockerfile используют multi-stage сборку.
+
+**Backend** — SDK образ для сборки, ASP.NET Runtime для запуска.
+
+**Frontend** — Node для сборки Vite, Nginx Alpine для раздачи статики.
+
+Nginx настроен с SPA fallback, gzip и долгосрочным кэшированием ассетов.
+
 ---
 
 ## Роли пользователей
