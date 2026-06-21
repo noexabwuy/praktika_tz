@@ -5,6 +5,7 @@ import { Dropdown } from '../components/ui/Dropdown';
 import { Button } from '../components/ui/Button';
 import { SearchInput } from '../components/ui/SearchInput';
 import { IconButton } from '../components/ui/IconButton';
+import { Alert } from '../components/ui/Alert';
 import { useAuth } from '../context/AuthContext';
 import { useApplicationDictionaries } from '../hooks/useApplicationDictionaries';
 import { useApplicationsList } from '../hooks/useApplicationsList';
@@ -48,6 +49,11 @@ export const ApplicationsPage: React.FC = () => {
   const [assignError, setAssignError] = useState<string | null>(null);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [searchVal, setSearchVal] = useState(filters.search);
+  const [showError, setShowError] = useState(true);
+
+  useEffect(() => {
+    if (error) setShowError(true);
+  }, [error]);
 
   // Синхронизируем локальный ввод с изменениями URL (например, при полном сбросе)
   useEffect(() => {
@@ -94,19 +100,16 @@ export const ApplicationsPage: React.FC = () => {
 
       {/* Ошибки назначения */}
       {assignError && (
-        <div className="p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l flex items-center gap-xs animate-scaleIn">
-          <span>{assignError}</span>
-          <button onClick={() => setAssignError(null)} className="ml-auto">
-            <X size={18} />
-          </button>
-        </div>
+        <Alert variant="error" onClose={() => setAssignError(null)} className="mb-md">
+          {assignError}
+        </Alert>
       )}
 
       {/* Глобальная ошибка загрузки */}
-      {error && (
-        <div className="p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l">
+      {error && showError && (
+        <Alert variant="error" onClose={() => setShowError(false)} className="mb-md">
           {error}
-        </div>
+        </Alert>
       )}
 
       {/* Панель управления поиском и фильтрами */}

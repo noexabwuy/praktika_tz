@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextInput, PasswordInput } from '../components/ui/Input';
+import { Alert } from '../components/ui/Alert';
 import { useAuthActions } from '../hooks/useAuth';
 
 type AuthMode = 'login' | 'register';
@@ -46,9 +47,9 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-md p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l font-medium">
+          <Alert variant="error" onClose={clearError} className="mb-md">
             {error.message}
-          </div>
+          </Alert>
         )}
 
         {mode === 'login' ? (

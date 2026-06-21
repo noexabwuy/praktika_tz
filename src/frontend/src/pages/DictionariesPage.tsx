@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, Pen, Check } from 'lucide-react';
+import { X, Pen } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { TextInput } from '../components/ui/Input/TextInput';
 import { IconButton } from '../components/ui/IconButton';
 import { SearchInput } from '../components/ui/SearchInput';
+import { Alert } from '../components/ui/Alert';
 import { dictionaryService } from '../services/dictionaryService';
 import type { DictionaryItem } from '../services/dictionaryService';
 
@@ -187,20 +188,16 @@ export const DictionariesPage: React.FC = () => {
 
       {/* Ошибки валидации или удаления */}
       {error && (
-        <div className="p-md bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-l mb-md flex-shrink-0">
+        <Alert variant="error" onClose={() => setError(null)} className="mb-md flex-shrink-0">
           {error}
-        </div>
+        </Alert>
       )}
 
       {/* Уведомления об успешных операциях */}
       {successMessage && (
-        <div className="p-md bg-primary-light border border-status-success/30 rounded-base text-status-success text-text-l flex items-center gap-xs animate-scaleIn flex-shrink-0">
-          <Check size={18} strokeWidth={3} className="text-status-success mr-1" />
-          <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage(null)} className="ml-auto">
-            <X size={18} />
-          </button>
-        </div>
+        <Alert variant="success" onClose={() => setSuccessMessage(null)} className="mb-md flex-shrink-0">
+          {successMessage}
+        </Alert>
       )}
 
       {/* Панель поиска и добавления (снаружи карточки, как на странице заявок) */}
@@ -339,9 +336,9 @@ export const DictionariesPage: React.FC = () => {
             </div>
 
             {modalError && (
-              <div className="p-sm bg-red-50 border border-status-error/30 rounded-base text-status-error text-text-m">
+              <Alert variant="error" onClose={() => setModalError(null)} className="mb-md">
                 {modalError}
-              </div>
+              </Alert>
             )}
 
             <TextInput
