@@ -5,32 +5,93 @@ on:
     branches: [dev]
     paths:
       - "src/backend/**"
+      - "tests/**"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [dev]
     paths:
       - "src/backend/**"
+      - "tests/**"
       - ".github/workflows/ci.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DOTNET_VERSION: "8.0.x"
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/backend/api
+
+    permissions:
+      contents: read
+      checks: write
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.0.x
-      - name: Restore dependencies
-        run: dotnet restore
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        env:
+          NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+        run: |
+          dotnet restore src/backend/api/api.csproj
+          dotnet restore tests/TrainingCenter.Tests/TrainingCenter.Tests.csproj
+
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: |
+          dotnet build src/backend/api/api.csproj \
+            --configuration Release \
+            --no-restore
+
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: |
+          dotnet test tests/TrainingCenter.Tests/TrainingCenter.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger "trx;LogFileName=results.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: "Test Results"
+          path: "./TestResults/*.trx"
+          reporter: dotnet-trx
+          fail-on-error: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 7
+
+      - name: Upload test results (raw)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./TestResults
+          retention-days: 7
