@@ -29,4 +29,24 @@ export const applicationService = {
     const response = await api.post<ApplicationResponse>('/applications', data);
     return response.data;
   },
+
+  getList: async (params?: {
+    my?: boolean;
+    status?: string;
+    directionId?: string;
+    formatId?: string;
+  }): Promise<ApplicationResponse[]> => {
+    const response = await api.get<ApplicationResponse[]>('/applications', { params });
+    return response.data;
+  },
+
+  assign: async (id: string, assignedToId: string): Promise<ApplicationResponse> => {
+    const response = await api.patch<ApplicationResponse>(`/applications/${id}/assign`, { assignedToId });
+    return response.data;
+  },
+
+  updateStatus: async (id: string, status: string): Promise<ApplicationResponse> => {
+    const response = await api.patch<ApplicationResponse>(`/applications/${id}/status`, { status });
+    return response.data;
+  },
 };
