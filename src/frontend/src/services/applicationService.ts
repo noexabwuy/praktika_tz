@@ -49,4 +49,23 @@ export const applicationService = {
     const response = await api.patch<ApplicationResponse>(`/applications/${id}/status`, { status });
     return response.data;
   },
+
+  getComments: async (applicationId: string): Promise<CommentResponse[]> => {
+    const response = await api.get<CommentResponse[]>(`/applications/${applicationId}/comments`);
+    return response.data;
+  },
+
+  addComment: async (applicationId: string, text: string): Promise<CommentResponse> => {
+    const response = await api.post<CommentResponse>(`/applications/${applicationId}/comments`, { text });
+    return response.data;
+  },
 };
+
+export interface CommentResponse {
+  id: string;
+  applicationId: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+}
