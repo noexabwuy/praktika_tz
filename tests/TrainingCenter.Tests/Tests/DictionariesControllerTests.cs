@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests
 {
+    
     public class DictionariesControllerTests : IDisposable
     {
         private readonly ApplicationDbContext _context;
@@ -26,8 +27,10 @@ namespace TrainingCenter.Tests
         public DictionariesControllerTests()
         {
             _context = TestDatabaseHelper.CreateAndSeedDictionaryDatabase();
-            var loggerMock = new Mock<ILogger<DictionariesController>>();
-            _controller = new DictionariesController(_context, loggerMock.Object);
+            
+            var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<DictionariesController>.Instance;
+            
+            _controller = new DictionariesController(_context, logger);
             SetupUserWithRole("Admin");
         }
 
@@ -160,8 +163,12 @@ namespace TrainingCenter.Tests
         [Fact]
         public async Task CreateDirection_WithNullDto_ReturnsBadRequest()
         {
+            // Arrange
+            var localLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger<DictionariesController>.Instance;
+            var localController = new DictionariesController(_context, localLogger);
+
             // Act
-            var result = await _controller.CreateDirection(null!);
+            var result = await localController.CreateDirection(null!);
 
             // Assert
             var badRequestResult = result as BadRequestObjectResult;
@@ -330,15 +337,18 @@ namespace TrainingCenter.Tests
         [Fact]
         public async Task CreateTrainingFormat_WithNullDto_ReturnsBadRequest()
         {
+            // Arrange
+            var localLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger<DictionariesController>.Instance;
+            var localController = new DictionariesController(_context, localLogger);
+
             // Act
-            var result = await _controller.CreateTrainingFormat(null!);
+            var result = await localController.CreateTrainingFormat(null!);
 
             // Assert
             var badRequestResult = result as BadRequestObjectResult;
             badRequestResult.Should().NotBeNull();
             badRequestResult!.StatusCode.Should().Be(400);
         }
-
         // Сценарий: Администратор обновляет название существующего формата на уникальное
         // Ожидаемый результат: Название формата успешно обновляется, возвращается обновлённый объект
         // Код ответа: 200 OK

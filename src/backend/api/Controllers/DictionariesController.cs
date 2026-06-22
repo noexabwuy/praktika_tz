@@ -130,27 +130,27 @@ namespace api.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateDirection([FromBody] DictionaryRequestDto dto)
         {
-            _logger.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto.Name);
-
             if (dto == null)
             {
-                _logger.LogWarning("Создание направления: Отклонено, некорректные данные запроса.");
+                _logger.LogWarning("Создание направления: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
+            _logger.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto?.Name);
+
             var exists = await _context.Directions
-                .AnyAsync(d => d.Name.ToLower() == dto.Name.ToLower());
+                .AnyAsync(d => d.Name.ToLower() == (dto?.Name ?? "").ToLower());
 
             if (exists)
             {
-                _logger.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto?.Name);
                 return BadRequest(new { message = "Направление с таким названием уже существует" });
             }
 
             var direction = new Direction
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name
+                Name = dto?.Name ?? ""
             };
 
             _context.Directions.Add(direction);
@@ -288,23 +288,25 @@ namespace api.Controllers
         {
             if (dto == null)
             {
-                _logger.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса.");
+                _logger.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
+            _logger.LogInformation("Создание формата обучения: Попытка создания формата с названием '{Name}'", dto?.Name);
+
             var exists = await _context.TrainingFormats
-                .AnyAsync(f => f.Name.ToLower() == dto.Name.ToLower());
+                .AnyAsync(f => f.Name.ToLower() == (dto?.Name ?? "").ToLower());
 
             if (exists)
             {
-                _logger.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto?.Name);
                 return BadRequest(new { message = "Формат с таким названием уже существует" });
             }
 
             var format = new TrainingFormat
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name
+                Name = dto?.Name ?? ""
             };
 
             _context.TrainingFormats.Add(format);

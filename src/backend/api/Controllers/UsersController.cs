@@ -58,8 +58,9 @@ namespace api.Controllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var allowedRoles = new[] { "Manager", "Admin", "Director" };
 
-            if (string.IsNullOrEmpty(userRole) || !allowedRoles.Contains(userRole))
+            if (string.IsNullOrEmpty(userRole) || !allowedRoles.Contains(userRole, StringComparer.OrdinalIgnoreCase))
             {
+                _logger.LogWarning("Доступ отклонен: Пользователь с ролью '{Role}' не имеет прав.", userRole ?? "Unknown");
                 return Forbid();
             }
 
