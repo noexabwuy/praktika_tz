@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests.Helpers
 {
@@ -27,7 +29,8 @@ namespace TrainingCenter.Tests.Helpers
                 .Build();
 
 
-            var authController = new AuthController(context, configuration);
+            var mockLogger = new Mock<ILogger<AuthController>>();
+            var authController = new AuthController(context, configuration, mockLogger.Object);
 
             var loginDto = new LoginRequestDto
             {

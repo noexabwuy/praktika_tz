@@ -10,6 +10,7 @@ using api.Models.DTOs;
 using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
 
+
 namespace TrainingCenter.Tests.Tests
 {
     public class UsersControllerIntegrationTests : IDisposable

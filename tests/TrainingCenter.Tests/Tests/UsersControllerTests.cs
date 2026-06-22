@@ -15,6 +15,7 @@ using api.Models.DTOs;
 using api.Models.Entities;
 using System.Data;
 using TrainingCenter.Tests.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests
 {
@@ -28,8 +29,9 @@ namespace TrainingCenter.Tests
             // Используем Helper для создания и заполнения БД
             _context = TestDatabaseHelper.CreateAndSeedDatabase();
 
-            _controller = new UsersController(_context);
-
+            var mockLogger = new Mock<ILogger<UsersController>>();
+            
+            _controller = new UsersController(_context, mockLogger.Object);
             // Авторизация пользователя с ролью Admin
             SetupUserWithRole("Admin");
         }
@@ -197,7 +199,8 @@ namespace TrainingCenter.Tests
                 .Options;
 
             using var emptyContext = new ApplicationDbContext(emptyOptions);
-            var emptyController = new UsersController(emptyContext);
+            var mockLogger = new Mock<ILogger<UsersController>>();
+            var emptyController = new UsersController(emptyContext, mockLogger.Object);
             SetupUserWithRole("Admin");
 
             // Act

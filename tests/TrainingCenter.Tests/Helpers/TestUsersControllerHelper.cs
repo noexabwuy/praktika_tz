@@ -5,6 +5,8 @@ using api.Controllers;
 using api.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests.Helpers
 {
@@ -15,7 +17,8 @@ namespace TrainingCenter.Tests.Helpers
             string token,
             string? roleFilter = null)
         {
-            var controller = new UsersController(context);
+            var mockLogger = new Mock<ILogger<UsersController>>();
+            var controller = new UsersController(context, mockLogger.Object);
 
             var role = "Admin";
             var claims = new List<Claim>
