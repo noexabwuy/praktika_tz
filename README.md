@@ -5,17 +5,18 @@
 - **ORM:** Entity Framework Core
 - **Database:** PostgreSQL (в Docker)
 - **API Docs:** Swagger / OpenAPI
-- **Frontend:** React 18 + Vite + TypeScript
+- **Frontend:** React 19 + Vite + TypeScript + Tailwind CSS
 - **Design:** Figma
 
 
 ## Структура проекта
-- `/src/backend` - Исходный код API
-- `/src/frontend` - Исходный код клиентской части
-- `/docs` - ТЗ, схемы БД и дополнительная документация
-- `docker-compose.yml` - Конфигурация инфраструктуры
-- `Dockerfile` - инструкция по сборке образа
-- `.dockerignore` - список исключений для сборки
+- `/src/backend/api` - Исходный код API (ASP.NET Core 8)
+- `/src/frontend` - Исходный код клиентской части (React 19 + Vite)
+- `/scripts` - SQL-скрипты (seed-данные)
+- `/docs` - Документация (архитектура, БД, запуск, тестовые данные)
+- `docker-compose.yml` - Конфигурация Docker-инфраструктуры
+- `.env.example` - Шаблон переменных окружения
+- `.github/workflows/ci.yml` - CI/CD пайплайн
 
 
 ## Регламент разработки

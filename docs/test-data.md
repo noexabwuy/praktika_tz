@@ -14,7 +14,7 @@ docker compose exec db psql -U $env:POSTGRES_USER -d $env:POSTGRES_DB -f /script
 
 **Если переменные не читаются, то подставьте значения из `.env` напрямую:**
 ```bash
-docker compose exec db psql -U postgres -d learning_center -f /scripts/seed.sql
+docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 ```
 
 Скрипт идемпотентен: повторный запуск не дублирует данные.
@@ -56,8 +56,8 @@ docker compose exec db psql -U postgres -d learning_center -f /scripts/seed.sql
 | Курс по C# и .NET | New | ivanov |
 | DevOps-инжиниринг с нуля | New | sidorov |
 | Курс по веб-дизайну и Figma | InProgress | petrova |
-| Интенсив по Python | Approved | smirnova |
-| Курс по управлению проектами | Completed | admin |
+| Интенсив по Python для анализа данных | Approved | smirnova |
+| Курс по управлению проектами (PM) | Completed | admin |
 | Кибербезопасность: базовый уровень | Approved | petrova |
 | Fullstack-разработка на TypeScript | Approved | sidorov |
 | Курс 3D-моделирования и анимации | Rejected | sidorov |
