@@ -38,6 +38,11 @@ namespace TrainingCenter.Tests
 
         private void SetupUserWithRole(string role)
         {
+            SetupUserWithRole(_controller, role);
+        }
+
+        private void SetupUserWithRole(UsersController controller, string role)
+        {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Role, role),
@@ -47,7 +52,7 @@ namespace TrainingCenter.Tests
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var claimsPrincipal = new ClaimsPrincipal(identity);
 
-            _controller.ControllerContext = new ControllerContext
+            controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = claimsPrincipal }
             };
@@ -199,9 +204,11 @@ namespace TrainingCenter.Tests
                 .Options;
 
             using var emptyContext = new ApplicationDbContext(emptyOptions);
+
             var mockLogger = new Mock<ILogger<UsersController>>();
             var emptyController = new UsersController(emptyContext, mockLogger.Object);
-            SetupUserWithRole("Admin");
+            SetupUserWithRole(emptyController, "Admin");
+
 
             // Act
             var result = await emptyController.GetUsers(null);
@@ -215,6 +222,23 @@ namespace TrainingCenter.Tests
             users.Should().NotBeNull();
             users!.Count.Should().Be(0);
         }
+
+        // Сценарий: Запрос от пользователя с ролью Applicant (нет прав) 
+        // Ожидаемый результат: Ошибка 403
+        // Код ответа: 403
+        [Fact]
+        public async Task GetUsers_WithApplicantRole_ReturnsForbidden()
+        {
+            // Arrange
+            SetupUserWithRole("Applicant");
+
+            // Act
+            var result = await _controller.GetUsers(null);
+
+            // Assert
+            result.Should().BeOfType<ForbidResult>();
+        }
+
         public void Dispose()
         {
             _context.Database.EnsureDeleted();
