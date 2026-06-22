@@ -1,7 +1,7 @@
 # Схема базы данных
 
 ## Стек
-- PostgreSQL 16
+- PostgreSQL 15
 - EF Core (Code First, миграции)
 
 ---

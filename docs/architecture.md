@@ -1,160 +1,233 @@
 # Архитектура проекта
 
-## Стек
+## Технологический стек
 
-| Слой | Технология |
-|---|---|
-| Frontend | React + Vite, Nginx |
-| Backend | ASP.NET Core 8, EF Core 8 |
-| База данных | PostgreSQL 16 |
-| Инфраструктура | Docker Compose |
+| Слой | Технологии |
+|--------|------------|
+| Frontend | React 19, Vite 8, TypeScript 6, Tailwind CSS 3.4, React Router 7, Axios |
+| Backend | ASP.NET Core 8, EF Core 7 (Npgsql), BCrypt.Net-Next |
+| База данных | PostgreSQL 15 |
+| Инфраструктура | Docker Compose, GitHub Actions |
+| API-документация | Swagger / OpenAPI |
 
 ---
 
-## Как всё работает вместе
+## Схема взаимодействия
 
 ```mermaid
 graph TB
-    User["Пользователь\nбраузер"]
+    User["Пользователь"]
 
     subgraph "Docker Compose"
-        FE["frontend\nNginx :3000"]
-        BE["backend\nASP.NET Core :5071"]
-        DB["db\nPostgreSQL :5432"]
+        FE["Frontend :3000"]
+        BE["Backend :5071"]
+        DB["PostgreSQL :5432"]
     end
 
-    User -->|"открывает localhost:3000"| FE
-    FE -->|"/api/* → backend:8080"| BE
-    BE -->|"EF Core / Npgsql"| DB
+    User --> FE
+    User --> BE
+    BE --> DB
 ```
-
-Пользователь открывает браузер на `localhost:3000`. Все запросы к API фронтенд отправляет через Nginx, который проксирует их на бэкенд. Бэкенд работает с базой данных через EF Core.
-
----
-
-## Архитектура бэкенда
-
-```mermaid
-graph LR
-    REQ["HTTP запрос"] --> CTR["Controller\n/api/..."]
-    CTR --> SVC["Service\nбизнес-логика"]
-    SVC --> REP["DbContext\nEF Core"]
-    REP --> DB["PostgreSQL"]
-    SVC --> CTR
-    CTR --> RES["HTTP ответ\nDTO"]
-```
-
-### Слои
-
-**Controller** - принимает HTTP запросы, валидирует входные данные, возвращает ответ. Не содержит бизнес-логики.
-
-**Service** - вся бизнес-логика здесь. Работает с DbContext, проверяет правила (например, нельзя удалить направление если оно используется в заявках).
-
-**DbContext (EF Core)** - маппинг моделей на таблицы БД, миграции, запросы через LINQ.
-
-**DTO** — отдельные классы для входящих запросов (`RequestDto`) и исходящих ответов (`ResponseDto`). Модели Entity наружу не отдаются.
-
-### Контроллеры
-
-| Контроллер | Маршрут | Доступ |
-|---|---|---|
-| `AuthController` | `/api/auth` | Публичный |
-| `ApplicationsController` | `/api/applications` | Все роли |
-| `DictionariesController` | `/api/dictionaries` | GET — все, POST/PUT/DELETE — Admin |
-| `UsersController` | `/api/users` | Manager, Admin, Director |
 
 ### Авторизация
 
-Используется JWT. После входа фронтенд получает токен и отправляет его в заголовке каждого запроса:
-```
-Authorization: Bearer <token>
-```
-
-Токен содержит Id пользователя, логин и роль. Бэкенд проверяет роль через `[Authorize(Roles = "Admin")]`.
+- JWT Bearer
+- Срок жизни токена: 7 дней
+- Токен содержит:
+  - идентификатор пользователя;
+  - логин;
+  - роль.
+- Ролевая авторизация реализована через атрибуты `[Authorize(Roles = "...")]`.
 
 ---
 
 ## Структура проекта
 
-```
-ТЗ/
+```text
+.
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── src/
-│   ├── backend/
-│   │   └── api/
-│   │       ├── Controllers/     # HTTP эндпоинты
-│   │       ├── Services/        # бизнес-логика
-│   │       ├── Models/
-│   │       │   ├── Entities/    # модели БД
-│   │       │   └── DTOs/        # модели запросов и ответов
-│   │       ├── Data/
-│   │       │   └── ApplicationDbContext.cs
-│   │       └── Program.cs
+│   ├── backend/api/
+│   │   ├── Controllers/
+│   │   ├── Data/
+│   │   ├── Migrations/
+│   │   ├── Models/
+│   │   │   ├── Entities/
+│   │   │   └── DTOs/
+│   │   ├── Dockerfile
+│   │   ├── Program.cs
+│   │   └── appsettings.json
 │   └── frontend/
-│       └── src/
-│           ├── components/
-│           ├── pages/
-│           └── api/             # запросы к бэкенду
-├── docs/                        # документация
+│       ├── src/
+│       │   ├── components/
+│       │   ├── context/
+│       │   ├── hooks/
+│       │   ├── layouts/
+│       │   ├── pages/
+│       │   ├── services/
+│       │   ├── types/
+│       │   └── utils/
+│       ├── Dockerfile
+│       └── nginx.conf
+├── tests/
+│   └── TrainingCenter.Tests/
+├── scripts/
+│   └── seed.sql
+├── docs/
 ├── docker-compose.yml
-└── .env.example
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## Запуск проекта
+## База данных
 
-### Локальная разработка (без Docker)
+### Таблицы
 
-Каждый запускает свою часть отдельно:
+| Таблица | Назначение |
+|----------|------------|
+| `Users` | Пользователи |
+| `Applications` | Заявки на обучение |
+| `Directions` | Направления подготовки |
+| `TrainingFormats` | Форматы обучения |
+| `Comments` | Комментарии к заявкам |
+| `StatusHistories` | История изменения статусов |
+| `AuditLogs` | Журнал аудита действий |
 
-```bash
-# Бэкенд
-cd src/backend/api
-dotnet run
+### Особенности
 
-# Фронтенд
-cd src/frontend
-npm install
-npm run dev
-```
-
-БД при этом -  локальный PostgreSQL или Docker только для БД:
-```bash
-docker compose up db -d
-```
-
-### Полный запуск через Docker
-
-```bash
-cp .env.example .env      # заполнить переменные
-docker compose up -d --build
-```
-
-После запуска доступно:
-- `localhost:3000` — приложение
-- `localhost:5071/swagger` — документация API
+- Все первичные ключи имеют тип `Guid` (`UUID` в PostgreSQL).
+- Связи между сущностями описаны через Data Annotations.
+- Доступ к данным реализован через EF Core.
 
 ---
 
-## Переменные окружения
+## API
 
-Все секреты хранятся в `.env` файле (не в git). Шаблоном является `.env.example`:
+### Auth
 
-```env
-POSTGRES_DB=learning_center
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=           # заполнить локально
-JwtSettings__Secret=         # минимум 32 символа
-JwtSettings__Issuer=AppealsBackend
-JwtSettings__Audience=AppealsFrontend
-```
+Базовый маршрут: `/api/auth`
+
+| Метод | Маршрут | Описание |
+|---------|----------|----------|
+| POST | `/register` | Регистрация пользователя |
+| POST | `/login` | Аутентификация и получение JWT |
+
 ---
 
-## Роли пользователей
+### Users
 
-| Роль | Что может |
-|---|---|
-| `Applicant` | Создавать заявки, смотреть свои |
-| `Manager` | Обрабатывать заявки, менять статусы, комментировать |
-| `Admin` | Управлять справочниками и пользователями |
-| `Director` | Просматривать статистику и отчёты |
+Базовый маршрут: `/api/users`
+
+Доступ: `Manager`, `Admin`, `Director`
+
+| Метод | Маршрут | Описание |
+|---------|----------|----------|
+| GET | `/?role=` | Получение списка пользователей |
+
+---
+
+### Applications
+
+Базовый маршрут: `/api/applications`
+
+| Метод | Маршрут | Доступ |
+|---------|----------|---------|
+| GET | `/?my=&status=&directionId=&formatId=` | Все роли |
+| POST | `/` | Все роли |
+| PATCH | `/{id}/assign` | Manager |
+| PATCH | `/{id}/status` | Manager |
+| POST | `/{id}/comments` | Все роли |
+| GET | `/{id}/comments` | Все роли |
+
+---
+
+### Dictionaries
+
+Базовый маршрут: `/api/dictionaries`
+
+| Метод | Маршрут |
+|---------|----------|
+| GET, POST, PUT, DELETE | `/directions` |
+| GET, POST, PUT, DELETE | `/training-formats` |
+| GET | `/statuses` |
+
+Доступ:
+- чтение — все роли;
+- изменение справочников — `Admin`.
+
+---
+
+### Analytics
+
+Базовый маршрут: `/api/analytics`
+
+Доступ: `Director`, `Admin`
+
+| Метод | Маршрут |
+|---------|----------|
+| GET | `/statistics` |
+
+---
+
+## Роли
+
+| Роль | Возможности |
+|--------|-------------|
+| Applicant | Создание, просмотр и комментирование собственных заявок |
+| Manager | Просмотр всех заявок, назначение ответственных, изменение статусов, комментирование |
+| Admin | Управление справочниками, просмотр пользователей и статистики |
+| Director | Просмотр пользователей и аналитики |
+
+---
+
+## Статусы заявок
+
+| Код | Отображение |
+|------|-------------|
+| `New` | Новая |
+| `InProgress` | В работе |
+| `NeedsInfo` | Требуется уточнение |
+| `Approved` | Согласована |
+| `Rejected` | Отклонена |
+| `Completed` | Завершена |
+
+---
+
+## Ключевые компоненты
+
+### Backend
+
+- ASP.NET Core Web API
+- EF Core + PostgreSQL
+- JWT-аутентификация
+- Swagger
+- Автоматическое применение миграций при запуске
+
+### Frontend
+
+- React SPA
+- React Router
+- Context API для авторизации
+- Axios с JWT-интерсептором
+- Хранение токена в `localStorage`
+
+### Инфраструктура
+
+- Docker Compose:
+  - PostgreSQL
+  - Backend
+  - Frontend
+- Multi-stage Docker-сборка
+- GitHub Actions для CI
+
+### Тестирование
+
+- xUnit
+- FluentAssertions
+- Moq
+- WebApplicationFactory для интеграционных тестов
+- InMemory Provider для unit-тестов
