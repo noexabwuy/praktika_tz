@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using api.Data;
 using api.Models.DTOs;
 
@@ -48,6 +49,14 @@ namespace api.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> GetUsers([FromQuery] string? role = null)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var allowedRoles = new[] { "Manager", "Admin", "Director" };
+
+            if (string.IsNullOrEmpty(userRole) || !allowedRoles.Contains(userRole))
+            {
+                return Forbid();
+            }
+
             // Базовый запрос
             var query = _context.Users.AsQueryable();
 
