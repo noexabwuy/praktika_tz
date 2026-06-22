@@ -14,4 +14,11 @@ export const userService = {
     });
     return response.data;
   },
+  getUsers: async (role?: string): Promise<UserResponse[]> => {
+    // Получение списка всех пользователей с опциональной фильтрацией по роли
+    const response = await api.get<UserResponse[]>('/users', {
+      params: role ? { role } : {},
+    });
+    return response.data;
+  },
 };
