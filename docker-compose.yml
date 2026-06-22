@@ -32,6 +32,8 @@ services:
       - JwtSettings__Secret=${JWT_SECRET}
       - JwtSettings__Issuer=${JWT_ISSUER}
       - JwtSettings__Audience=${JWT_AUDIENCE}
+    volumes:
+      - ./logs_data:/app/Logs
     depends_on:
       db:
         condition: service_healthy

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models.DTOs;
+using Microsoft.Extensions.Logging;
 
 namespace api.Controllers
 {
@@ -15,10 +16,12 @@ namespace api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(ApplicationDbContext context, ILogger<UsersController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -48,6 +51,7 @@ namespace api.Controllers
         [ProducesResponseType(403)]
         public async Task<IActionResult> GetUsers([FromQuery] string? role = null)
         {
+            _logger.LogInformation("Запрошен список пользователей. Фильтр по роли: {Role}", role ?? "Все");
             // Базовый запрос
             var query = _context.Users.AsQueryable();
 
@@ -60,6 +64,8 @@ namespace api.Controllers
                 // Проверка, что переданная роль допустима
                 if (!validRoles.Contains(role, StringComparer.OrdinalIgnoreCase))
                 {
+                    _logger.LogWarning("Попытка фильтрации по недопустимой роли: '{Role}'", role);
+
                     return BadRequest(new
                     {
                         message = $"Недопустимое значение роли '{role}'. Допустимые значения: {string.Join(", ", validRoles)}"
@@ -80,6 +86,8 @@ namespace api.Controllers
                 })
                 .ToListAsync();
 
+            _logger.LogDebug("Успешно получено пользователей: {Count}", users.Count);
+            
             return Ok(users);
         }
     }
