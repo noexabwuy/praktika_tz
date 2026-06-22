@@ -13,6 +13,8 @@ using api.Data;
 using api.Models.DTOs;
 using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests
 {
@@ -24,7 +26,8 @@ namespace TrainingCenter.Tests
         public DictionariesControllerTests()
         {
             _context = TestDatabaseHelper.CreateAndSeedDictionaryDatabase();
-            _controller = new DictionariesController(_context);
+            var loggerMock = new Mock<ILogger<DictionariesController>>();
+            _controller = new DictionariesController(_context, loggerMock.Object);
             SetupUserWithRole("Admin");
         }
 
