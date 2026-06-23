@@ -13,34 +13,24 @@ namespace api.Controllers
     /// </summary>
     [ApiController]
     [Route("api/dictionaries")]
-    [Authorize] // Все эндпоинты требуют авторизации
+    [Authorize]
     public class DictionariesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<DictionariesController> _logger;
+        private readonly ILogger<DictionariesController>? _logger;
 
-        public DictionariesController(ApplicationDbContext context, ILogger<DictionariesController> logger)
+        public DictionariesController(ApplicationDbContext context, ILogger<DictionariesController>? logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Получение списка всех направлений подготовки
-        /// </summary>
-        /// <returns>Список направлений в формате DictionaryDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно всем авторизированным пользователям
-        /// </remarks>
-        /// <response code="200">Успешное получение списка направлений</response>
-        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("directions")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetDirections()
         {
-            _logger.LogInformation("Получение направлений: Запрошен список всех направлений подготовки.");
+            _logger?.LogInformation("Получение направлений: Запрошен список всех направлений подготовки.");
             var directions = await _context.Directions
                 .Select(d => new DictionaryDto
                 {
@@ -52,22 +42,12 @@ namespace api.Controllers
             return Ok(directions);
         }
 
-        /// <summary>
-        /// Получение списка всех форматов обучения
-        /// </summary>
-        /// <returns>Список форматов в формате DictionaryDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно всем авторизированным пользователям
-        /// </remarks>
-        /// <response code="200">Успешное получение списка форматов</response>
-        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("training-formats")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetStudyFormats()
         {
-            _logger.LogInformation("Получение форматов обучения: Запрошен список всех форматов обучения.");
+            _logger?.LogInformation("Получение форматов обучения: Запрошен список всех форматов обучения.");
             var formats = await _context.TrainingFormats
                 .Select(f => new DictionaryDto
                 {
@@ -79,22 +59,12 @@ namespace api.Controllers
             return Ok(formats);
         }
 
-        /// <summary>
-        /// Получение списка всех возможных статусов заявок
-        /// </summary>
-        /// <returns>Список статусов в формате DictionaryDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно всем авторизированным пользователям
-        /// </remarks>
-        /// <response code="200">Успешное получение списка статусов</response>
-        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("statuses")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
         public IActionResult GetStatuses()
         {
-            _logger.LogInformation("Получение статусов: Запрошен список всех статусов.");
+            _logger?.LogInformation("Получение статусов: Запрошен список всех статусов.");
 
             var statuses = new List<DictionaryDto>
             {
@@ -109,54 +79,42 @@ namespace api.Controllers
             return Ok(statuses);
         }
 
-        /// <summary>
-        /// Создание нового направления подготовки
-        /// </summary>
-        /// <param name="dto">Данные для создания направления (название)</param>
-        /// <returns>Созданное направление в формате DictionaryResponseDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="201">Направление успешно создано</response>
-        /// <response code="400">Некорректные данные запроса или направление с таким названием уже существует</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
         [HttpPost("directions")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> CreateDirection([FromBody] DictionaryRequestDto dto)
+        public async Task<IActionResult> CreateDirection([FromBody] DictionaryRequestDto? dto)
         {
             if (dto == null)
             {
-                _logger.LogWarning("Создание направления: Отклонено, некорректные данные запроса (null DTO).");
+                _logger?.LogWarning("Создание направления: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
-            _logger.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto?.Name);
+            _logger?.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto.Name);
 
+            var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.Directions
-                .AnyAsync(d => d.Name.ToLower() == (dto?.Name ?? "").ToLower());
+                .AnyAsync(d => d.Name.ToLower() == nameToCheck);
 
             if (exists)
             {
-                _logger.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto?.Name);
+                _logger?.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Направление с таким названием уже существует" });
             }
 
             var direction = new Direction
             {
                 Id = Guid.NewGuid(),
-                Name = dto?.Name ?? ""
+                Name = dto.Name ?? string.Empty
             };
 
             _context.Directions.Add(direction);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Создание направления: Успешно создано новое направление с ID {Id}", direction.Id);
+            _logger?.LogInformation("Создание направления: Успешно создано новое направление с ID {Id}", direction.Id);
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
@@ -165,21 +123,6 @@ namespace api.Controllers
             });
         }
 
-        /// <summary>
-        /// Обновление существующего направления подготовки
-        /// </summary>
-        /// <param name="id">Идентификатор направления</param>
-        /// <param name="dto">Новые данные направления (название)</param>
-        /// <returns>Обновлённое направление в формате DictionaryResponseDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="200">Направление успешно обновлено</response>
-        /// <response code="400">Некорректные данные запроса или направление с таким названием уже существует</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
-        /// <response code="404">Направление с указанным ID не найдено</response>
         [HttpPut("directions/{id}")]
         [Authorize(Roles = "Admin")] 
         [ProducesResponseType(typeof(DictionaryResponseDto), 200)]
@@ -187,29 +130,36 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateDirection(Guid id, [FromBody] DictionaryRequestDto dto)
+        public async Task<IActionResult> UpdateDirection(Guid id, [FromBody] DictionaryRequestDto? dto)
         {
             var direction = await _context.Directions.FindAsync(id);
 
             if (direction == null)
             {
-                _logger.LogWarning("Обновление направления: Направление с ID {Id} не найдено.", id);
+                _logger?.LogWarning("Обновление направления: Направление с ID {Id} не найдено.", id);
                 return NotFound(new { message = "Направление не найдено" });
             }
 
+            if (dto == null)
+            {
+                _logger?.LogWarning("Обновление направления: Отклонено, некорректные данные запроса (null DTO).");
+                return BadRequest(new { message = "Некорректные данные запроса" });
+            }
+
+            var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.Directions
-                .AnyAsync(d => d.Name.ToLower() == dto.Name.ToLower() && d.Id != id);
+                .AnyAsync(d => d.Name.ToLower() == nameToCheck && d.Id != id);
 
             if (exists)
             {
-                _logger.LogWarning("Обновление направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
+                _logger?.LogWarning("Обновление направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Направление с таким названием уже существует" });
             }
 
-            direction.Name = dto.Name;
+            direction.Name = dto.Name ?? string.Empty;
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Обновление направления: Направление с ID {Id} успешно обновлено.", id);
+            _logger?.LogInformation("Обновление направления: Направление с ID {Id} успешно обновлено.", id);
 
             return Ok(new DictionaryResponseDto
             {
@@ -218,20 +168,6 @@ namespace api.Controllers
             });
         }
 
-        /// <summary>
-        /// Удаление направления подготовки
-        /// </summary>
-        /// <param name="id">Идентификатор направления</param>
-        /// <returns>Сообщение об успешном удалении</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="200">Направление успешно удалено</response>
-        /// <response code="400">Невозможно удалить направление, так как оно используется в заявках</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
-        /// <response code="404">Направление с указанным ID не найдено</response>
         [HttpDelete("directions/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
@@ -245,7 +181,7 @@ namespace api.Controllers
 
             if (direction == null)
             {
-                _logger.LogWarning("Удаление направления: Направление с ID {Id} не найдено.", id);
+                _logger?.LogWarning("Удаление направления: Направление с ID {Id} не найдено.", id);
                 return NotFound(new { message = "Направление не найдено" });
             }
 
@@ -254,65 +190,53 @@ namespace api.Controllers
 
             if (hasApplications)
             {
-                _logger.LogWarning("Удаление направления: Направление с ID {Id} используется в заявках.", id);
+                _logger?.LogWarning("Удаление направления: Направление с ID {Id} используется в заявках.", id);
                 return BadRequest(new { message = "Нельзя удалить направление, так как оно используется в заявках" });
             }
 
             _context.Directions.Remove(direction);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Удаление направления: Направление с ID {Id} успешно удалено.", id);
+            _logger?.LogInformation("Удаление направления: Направление с ID {Id} успешно удалено.", id);
             return Ok(new { message = "Направление успешно удалено" });
         }
 
-        /// <summary>
-        /// Создание нового формата обучения
-        /// </summary>
-        /// <param name="dto">Данные для создания формата (название)</param>
-        /// <returns>Созданный формат в формате DictionaryResponseDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="201">Формат успешно создан</response>
-        /// <response code="400">Некорректные данные запроса или формат с таким названием уже существует</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
         [HttpPost("training-formats")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> CreateTrainingFormat([FromBody] DictionaryRequestDto dto)
+        public async Task<IActionResult> CreateTrainingFormat([FromBody] DictionaryRequestDto? dto)
         {
             if (dto == null)
             {
-                _logger.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса (null DTO).");
+                _logger?.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
-            _logger.LogInformation("Создание формата обучения: Попытка создания формата с названием '{Name}'", dto?.Name);
+            _logger?.LogInformation("Создание формата обучения: Попытка создания формата с названием '{Name}'", dto.Name);
 
+            var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.TrainingFormats
-                .AnyAsync(f => f.Name.ToLower() == (dto?.Name ?? "").ToLower());
+                .AnyAsync(f => f.Name.ToLower() == nameToCheck);
 
             if (exists)
             {
-                _logger.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto?.Name);
+                _logger?.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Формат с таким названием уже существует" });
             }
 
             var format = new TrainingFormat
             {
                 Id = Guid.NewGuid(),
-                Name = dto?.Name ?? ""
+                Name = dto.Name ?? string.Empty
             };
 
             _context.TrainingFormats.Add(format);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Создание формата обучения: Успешно создан новый формат с ID {Id}", format.Id);
+            _logger?.LogInformation("Создание формата обучения: Успешно создан новый формат с ID {Id}", format.Id);
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
@@ -321,21 +245,6 @@ namespace api.Controllers
             });
         }
 
-        /// <summary>
-        /// Обновление существующего формата обучения
-        /// </summary>
-        /// <param name="id">Идентификатор формата</param>
-        /// <param name="dto">Новые данные формата (название)</param>
-        /// <returns>Обновлённый формат в формате DictionaryResponseDto</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="200">Формат успешно обновлён</response>
-        /// <response code="400">Некорректные данные запроса или формат с таким названием уже существует</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
-        /// <response code="404">Формат с указанным ID не найден</response>
         [HttpPut("training-formats/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 200)]
@@ -343,27 +252,34 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateTrainingFormat(Guid id, [FromBody] DictionaryRequestDto dto)
+        public async Task<IActionResult> UpdateTrainingFormat(Guid id, [FromBody] DictionaryRequestDto? dto)
         {
             var format = await _context.TrainingFormats.FindAsync(id);
 
             if (format == null)
             {
-                _logger.LogWarning("Обновление формата обучения: Формат с ID {Id} не найден.", id);
+                _logger?.LogWarning("Обновление формата обучения: Формат с ID {Id} не найден.", id);
                 return NotFound(new { message = "Формат не найден" });
             }
 
+            if (dto == null)
+            {
+                _logger?.LogWarning("Обновление формата обучения: Отклонено, некорректные данные запроса (null DTO).");
+                return BadRequest(new { message = "Некорректные данные запроса" });
+            }
+
+            var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.TrainingFormats
-                .AnyAsync(f => f.Name.ToLower() == dto.Name.ToLower() && f.Id != id);
+                .AnyAsync(f => f.Name.ToLower() == nameToCheck && f.Id != id);
 
             if (exists)
             {
-                _logger.LogWarning("Обновление формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
+                _logger?.LogWarning("Обновление формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Формат с таким названием уже существует" });
             }
 
-            format.Name = dto.Name;
-            _logger.LogInformation("Обновление формата обучения: Формат с ID {Id} успешно обновлен.", id);
+            format.Name = dto.Name ?? string.Empty;
+            _logger?.LogInformation("Обновление формата обучения: Формат с ID {Id} успешно обновлен.", id);
             await _context.SaveChangesAsync();
 
             return Ok(new DictionaryResponseDto
@@ -373,20 +289,6 @@ namespace api.Controllers
             });
         }
 
-        /// <summary>
-        /// Удаление формата обучения (только для Admin)
-        /// </summary>
-        /// <param name="id">Идентификатор формата</param>
-        /// <returns>Сообщение об успешном удалении</returns>
-        /// <remarks>
-        /// Права доступа:
-        /// - Доступно только для Admin
-        /// </remarks>
-        /// <response code="200">Формат успешно удалён</response>
-        /// <response code="400">Невозможно удалить формат, так как он используется в заявках</response>
-        /// <response code="401">Пользователь не авторизован</response>
-        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
-        /// <response code="404">Формат с указанным ID не найден</response>
         [HttpDelete("training-formats/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
@@ -400,7 +302,7 @@ namespace api.Controllers
 
             if (format == null)
             {
-                _logger.LogWarning("Удаление формата обучения: Формат с ID {Id} не найден.", id);
+                _logger?.LogWarning("Удаление формата обучения: Формат с ID {Id} не найден.", id);
                 return NotFound(new { message = "Формат не найден" });
             }
 
@@ -409,14 +311,14 @@ namespace api.Controllers
 
             if (hasApplications)
             {
-                _logger.LogWarning("Удаление формата обучения: Формат с ID {Id} используется в заявках.", id);
+                _logger?.LogWarning("Удаление формата обучения: Формат с ID {Id} используется в заявках.", id);
                 return BadRequest(new { message = "Нельзя удалить формат, так как он используется в заявках" });
             }
 
             _context.TrainingFormats.Remove(format);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Удаление формата обучения: Формат с ID {Id} успешно удалён.", id);
+            _logger?.LogInformation("Удаление формата обучения: Формат с ID {Id} успешно удалён.", id);
             
             return Ok(new { message = "Формат успешно удален" });
         }

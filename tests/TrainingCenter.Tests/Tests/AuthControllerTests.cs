@@ -13,7 +13,6 @@ using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests.Tests
 {
