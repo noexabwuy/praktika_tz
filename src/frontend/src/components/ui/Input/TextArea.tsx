@@ -6,18 +6,20 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const { textAreaRef, resize } = useTextAreaResize(value);
 
     // Объединяем рефы
-    const setRefs = (node: HTMLTextAreaElement) => {
-      (textAreaRef as any).current = node;
-      if (typeof ref === 'function') {
-        ref(node);
-      } else if (ref) {
-        (ref as any).current = node;
+    const setRefs = (node: HTMLTextAreaElement | null) => {
+      if (node) {
+        (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current = node;
+        }
       }
     };
 
-    const handleInput = (e: any) => {
+    const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
       resize();
-      if (onInput) onInput(e);
+      if (onInput) (onInput as React.FormEventHandler<HTMLTextAreaElement>)(e);
     };
 
     return (

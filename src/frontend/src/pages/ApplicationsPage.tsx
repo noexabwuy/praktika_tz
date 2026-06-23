@@ -52,12 +52,14 @@ export const ApplicationsPage: React.FC = () => {
   const [showError, setShowError] = useState(true);
 
   useEffect(() => {
-    if (error) setShowError(true);
+    if (error) {
+      Promise.resolve().then(() => setShowError(true));
+    }
   }, [error]);
 
   // Синхронизируем локальный ввод с изменениями URL (например, при полном сбросе)
   useEffect(() => {
-    setSearchVal(filters.search);
+    Promise.resolve().then(() => setSearchVal(filters.search));
   }, [filters.search]);
 
   const isApplicant = user?.role === 'Applicant';
@@ -72,8 +74,8 @@ export const ApplicationsPage: React.FC = () => {
     setAssignError(null);
     try {
       await handleAssign(appId, value);
-    } catch (err: any) {
-      setAssignError(err.message || 'Ошибка при назначении ответственного');
+    } catch (err: unknown) {
+      setAssignError((err as Error).message || 'Ошибка при назначении ответственного');
     }
   };
 

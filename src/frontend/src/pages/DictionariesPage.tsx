@@ -56,7 +56,7 @@ export const DictionariesPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadData();
+    Promise.resolve().then(loadData);
   }, [loadData]);
 
   const handleOpenAdd = () => {
@@ -102,8 +102,9 @@ export const DictionariesPage: React.FC = () => {
       setSuccessMessage(`${entityText} успешно ${actionText}.`);
       setError(null);
       setEditItem(null);
-    } catch (err: any) {
-      const errMsg = err?.response?.data?.message || 'Ошибка при сохранении изменений.';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const errMsg = error?.response?.data?.message || 'Ошибка при сохранении изменений.';
       setModalError(errMsg);
     } finally {
       setIsSaving(false);
@@ -135,8 +136,9 @@ export const DictionariesPage: React.FC = () => {
       setSuccessMessage(`${entityText} успешно удалено.`);
       setError(null);
       setDeleteItem(null);
-    } catch (err: any) {
-      const errMsg = err?.response?.data?.message || 'Не удалось удалить элемент справочника.';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const errMsg = error?.response?.data?.message || 'Не удалось удалить элемент справочника.';
       setError(errMsg);
       setIsDeleteModalOpen(false);
     } finally {

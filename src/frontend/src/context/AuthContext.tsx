@@ -2,7 +2,6 @@ import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   useMemo,
 } from 'react';
@@ -33,23 +32,19 @@ const USER_KEY  = 'auth_user';
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    token: null,
-    isLoading: true,
-  });
-  useEffect(() => {
+  const [state, setState] = useState<AuthState>(() => {
     try {
       const token = localStorage.getItem(TOKEN_KEY);
       const raw   = localStorage.getItem(USER_KEY);
       if (token && raw) {
         const user = JSON.parse(raw) as AuthUser;
-        setState({ token, user, isLoading: false });
-        return;
+        return { token, user, isLoading: false };
       }
-    } catch {}
-    setState({ token: null, user: null, isLoading: false });
-  }, []);
+    } catch (err) {
+      console.warn('Failed to parse cached session:', err);
+    }
+    return { token: null, user: null, isLoading: false };
+  });
 
   const login = useCallback((token: string, user: AuthUser) => {
     localStorage.setItem(TOKEN_KEY, token);
