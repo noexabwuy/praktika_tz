@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using api.Data;
+using api.Middleware;
 
 DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
@@ -91,6 +92,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.UseAuthentication();
+app.UseUserExistsMiddleware();
 app.UseAuthorization();
 app.MapControllers();
 
