@@ -25,6 +25,16 @@ namespace api.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Получение списка всех направлений подготовки
+        /// </summary>
+        /// <returns>Список направлений в формате DictionaryDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно всем авторизированным пользователям
+        /// </remarks>
+        /// <response code="200">Успешное получение списка направлений</response>
+        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("directions")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
@@ -42,6 +52,16 @@ namespace api.Controllers
             return Ok(directions);
         }
 
+        /// <summary>
+        /// Получение списка всех форматов обучения
+        /// </summary>
+        /// <returns>Список форматов в формате DictionaryDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно всем авторизированным пользователям
+        /// </remarks>
+        /// <response code="200">Успешное получение списка форматов</response>
+        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("training-formats")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
@@ -59,6 +79,16 @@ namespace api.Controllers
             return Ok(formats);
         }
 
+        /// <summary>
+        /// Получение списка всех возможных статусов заявок
+        /// </summary>
+        /// <returns>Список статусов в формате DictionaryDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно всем авторизированным пользователям
+        /// </remarks>
+        /// <response code="200">Успешное получение списка статусов</response>
+        /// <response code="401">Пользователь не авторизован</response>
         [HttpGet("statuses")]
         [ProducesResponseType(typeof(List<DictionaryDto>), 200)]
         [ProducesResponseType(401)]
@@ -79,6 +109,19 @@ namespace api.Controllers
             return Ok(statuses);
         }
 
+        /// <summary>
+        /// Создание нового направления подготовки
+        /// </summary>
+        /// <param name="dto">Данные для создания направления (название)</param>
+        /// <returns>Созданное направление в формате DictionaryResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="201">Направление успешно создано</response>
+        /// <response code="400">Некорректные данные запроса или направление с таким названием уже существует</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
         [HttpPost("directions")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 201)]
@@ -123,6 +166,21 @@ namespace api.Controllers
             });
         }
 
+        /// <summary>
+        /// Обновление существующего направления подготовки
+        /// </summary>
+        /// <param name="id">Идентификатор направления</param>
+        /// <param name="dto">Новые данные направления (название)</param>
+        /// <returns>Обновлённое направление в формате DictionaryResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="200">Направление успешно обновлено</response>
+        /// <response code="400">Некорректные данные запроса или направление с таким названием уже существует</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+        /// <response code="404">Направление с указанным ID не найдено</response>
         [HttpPut("directions/{id}")]
         [Authorize(Roles = "Admin")] 
         [ProducesResponseType(typeof(DictionaryResponseDto), 200)]
@@ -168,6 +226,20 @@ namespace api.Controllers
             });
         }
 
+        /// <summary>
+        /// Удаление направления подготовки
+        /// </summary>
+        /// <param name="id">Идентификатор направления</param>
+        /// <returns>Сообщение об успешном удалении</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="200">Направление успешно удалено</response>
+        /// <response code="400">Невозможно удалить направление, так как оно используется в заявках</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+        /// <response code="404">Направление с указанным ID не найдено</response>
         [HttpDelete("directions/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
@@ -201,6 +273,19 @@ namespace api.Controllers
             return Ok(new { message = "Направление успешно удалено" });
         }
 
+        /// <summary>
+        /// Создание нового формата обучения
+        /// </summary>
+        /// <param name="dto">Данные для создания формата (название)</param>
+        /// <returns>Созданный формат в формате DictionaryResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="201">Формат успешно создан</response>
+        /// <response code="400">Некорректные данные запроса или формат с таким названием уже существует</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
         [HttpPost("training-formats")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 201)]
@@ -245,6 +330,21 @@ namespace api.Controllers
             });
         }
 
+        /// <summary>
+        /// Обновление существующего формата обучения
+        /// </summary>
+        /// <param name="id">Идентификатор формата</param>
+        /// <param name="dto">Новые данные формата (название)</param>
+        /// <returns>Обновлённый формат в формате DictionaryResponseDto</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="200">Формат успешно обновлён</response>
+        /// <response code="400">Некорректные данные запроса или формат с таким названием уже существует</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+        /// <response code="404">Формат с указанным ID не найден</response>
         [HttpPut("training-formats/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(DictionaryResponseDto), 200)]
@@ -289,6 +389,20 @@ namespace api.Controllers
             });
         }
 
+        /// <summary>
+        /// Удаление формата обучения (только для Admin)
+        /// </summary>
+        /// <param name="id">Идентификатор формата</param>
+        /// <returns>Сообщение об успешном удалении</returns>
+        /// <remarks>
+        /// Права доступа:
+        /// - Доступно только для Admin
+        /// </remarks>
+        /// <response code="200">Формат успешно удалён</response>
+        /// <response code="400">Невозможно удалить формат, так как он используется в заявках</response>
+        /// <response code="401">Пользователь не авторизован</response>
+        /// <response code="403">Недостаточно прав (требуется роль Admin)</response>
+        /// <response code="404">Формат с указанным ID не найден</response>
         [HttpDelete("training-formats/{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
