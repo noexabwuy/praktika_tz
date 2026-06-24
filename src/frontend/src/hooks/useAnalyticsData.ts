@@ -40,7 +40,7 @@ export const useAnalyticsData = () => {
   }, []);
 
   useEffect(() => {
-    loadData();
+    Promise.resolve().then(loadData);
   }, [loadData]);
 
   // Группировка заявок для графика динамики

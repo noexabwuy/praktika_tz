@@ -75,15 +75,16 @@ export const ApplicationDetailsPage: React.FC = () => {
       // Загружаем комментарии
       const commentsData = await applicationService.getComments(id);
       setComments(commentsData);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Не удалось загрузить данные заявки.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || 'Не удалось загрузить данные заявки.');
     } finally {
       setIsLoading(false);
     }
   }, [id, user]);
 
   useEffect(() => {
-    loadData();
+    Promise.resolve().then(loadData);
   }, [loadData]);
 
   // Смена ответственного
@@ -97,8 +98,9 @@ export const ApplicationDetailsPage: React.FC = () => {
       // Обновляем данные
       await loadData();
       setSuccessMessage('Ответственный менеджер успешно назначен.');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Не удалось назначить менеджера.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || 'Не удалось назначить менеджера.');
     } finally {
       setIsSubmittingAssign(false);
     }
@@ -134,8 +136,9 @@ export const ApplicationDetailsPage: React.FC = () => {
       // Обновляем данные
       await loadData();
       setSuccessMessage('Статус заявки успешно обновлен.');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Не удалось обновить статус заявки.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || 'Не удалось обновить статус заявки.');
     } finally {
       setIsSubmittingStatus(false);
     }
@@ -164,8 +167,9 @@ export const ApplicationDetailsPage: React.FC = () => {
       setComments(commentsData);
       
       setSuccessMessage('Комментарий успешно добавлен.');
-    } catch (err: any) {
-      setCommentError(err?.response?.data?.message || 'Не удалось отправить комментарий.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setCommentError(error?.response?.data?.message || 'Не удалось отправить комментарий.');
     } finally {
       setIsSubmittingComment(false);
     }

@@ -31,7 +31,7 @@ export const useApplicationsList = (pageSize: number = 10) => {
       setIsLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | boolean> = {
         my: user?.role === 'Applicant',
       };
       if (status) params.status = status;
@@ -50,7 +50,7 @@ export const useApplicationsList = (pageSize: number = 10) => {
   // Загружаем заявки при монтировании или изменении серверных фильтров
   useEffect(() => {
     if (user) {
-      fetchApplications();
+      Promise.resolve().then(fetchApplications);
     }
   }, [fetchApplications, user]);
 
@@ -95,9 +95,10 @@ export const useApplicationsList = (pageSize: number = 10) => {
     try {
       await applicationService.assign(applicationId, managerId);
       await fetchApplications();
-    } catch (err: any) {
-      const errMsg = err?.response?.data?.message || 'Не удалось назначить ответственного';
-      throw new Error(errMsg);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const errMsg = error?.response?.data?.message || 'Не удалось назначить ответственного';
+      throw new Error(errMsg, { cause: err });
     }
   };
 
@@ -105,9 +106,10 @@ export const useApplicationsList = (pageSize: number = 10) => {
     try {
       await applicationService.updateStatus(applicationId, status);
       await fetchApplications();
-    } catch (err: any) {
-      const errMsg = err?.response?.data?.message || 'Не удалось обновить статус';
-      throw new Error(errMsg);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const errMsg = error?.response?.data?.message || 'Не удалось обновить статус';
+      throw new Error(errMsg, { cause: err });
     }
   };
 

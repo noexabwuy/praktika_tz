@@ -21,8 +21,9 @@ export const UsersPage: React.FC = () => {
         setError(null);
         const data = await userService.getUsers();
         setUsers(data);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || 'Не удалось загрузить список пользователей.');
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } } };
+        setError(error?.response?.data?.message || 'Не удалось загрузить список пользователей.');
       } finally {
         setIsLoading(false);
       }

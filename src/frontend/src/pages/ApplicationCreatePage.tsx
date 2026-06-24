@@ -30,11 +30,15 @@ export const ApplicationCreatePage: React.FC = () => {
   const [showSubmitError, setShowSubmitError] = useState(true);
 
   useEffect(() => {
-    if (dictionaryError) setShowDictError(true);
+    if (dictionaryError) {
+      Promise.resolve().then(() => setShowDictError(true));
+    }
   }, [dictionaryError]);
 
   useEffect(() => {
-    if (submitError) setShowSubmitError(true);
+    if (submitError) {
+      Promise.resolve().then(() => setShowSubmitError(true));
+    }
   }, [submitError]);
 
   return (

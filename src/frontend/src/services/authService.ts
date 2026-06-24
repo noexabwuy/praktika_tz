@@ -23,9 +23,9 @@ export const authService = {
         password: credentials.password,
       });
       return response.data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
-        const data = err.response.data as any;
+        const data = err.response.data as { message?: string; field?: 'login' | 'password' | 'email' | 'fullName' | 'confirmPassword' };
         throw new AuthError(data.message || 'Неверный логин или пароль', data.field);
       }
       throw new AuthError('Ошибка подключения к серверу. Убедитесь, что бэкенд запущен.');
@@ -47,9 +47,9 @@ export const authService = {
         login: credentials.login,
         password: credentials.password,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response) {
-        const data = err.response.data as any;
+        const data = err.response.data as { message?: string; field?: 'login' | 'password' | 'email' | 'fullName' | 'confirmPassword' };
         throw new AuthError(data.message || 'Ошибка регистрации', data.field);
       }
       throw new AuthError('Ошибка подключения к серверу. Убедитесь, что бэкенд запущен.');

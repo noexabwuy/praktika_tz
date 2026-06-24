@@ -16,7 +16,7 @@ export const useAuthActions = () => {
       const response = await authService.login(credentials);
       login(response.token, response.user);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof AuthError) {
         setError({
           message: err.message,
@@ -24,7 +24,7 @@ export const useAuthActions = () => {
         });
       } else {
         setError({
-          message: err.message || 'Ошибка входа',
+          message: (err as Error).message || 'Ошибка входа',
         });
       }
       return false;
@@ -61,7 +61,7 @@ export const useAuthActions = () => {
       const response = await authService.register(credentials);
       login(response.token, response.user);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof AuthError) {
         setError({
           message: err.message,
@@ -69,7 +69,7 @@ export const useAuthActions = () => {
         });
       } else {
         setError({
-          message: err.message || 'Ошибка регистрации',
+          message: (err as Error).message || 'Ошибка регистрации',
         });
       }
       return false;

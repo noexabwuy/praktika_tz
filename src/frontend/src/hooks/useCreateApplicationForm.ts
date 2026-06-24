@@ -87,15 +87,16 @@ export const useCreateApplicationForm = () => {
       setTimeout(() => {
         navigate('/applications');
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       let message = 'Ошибка при отправке заявки. Попробуйте еще раз.';
-      if (err?.response) {
-        if (err.response.status === 403) {
+      const error = err as { response?: { status?: number; data?: { message?: string } } };
+      if (error?.response) {
+        if (error.response.status === 403) {
           message = 'У вас нет прав для выполнения этой операции (403 Forbidden).';
-        } else if (err.response.status === 401) {
+        } else if (error.response.status === 401) {
           message = 'Сессия истекла. Пожалуйста, войдите в систему заново (401 Unauthorized).';
         } else {
-          message = err.response.data?.message || message;
+          message = error.response.data?.message || message;
         }
       }
       setSubmitError(message);
