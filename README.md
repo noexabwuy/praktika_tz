@@ -1,49 +1,152 @@
-# praktika_tz
+# Training Center
 
-## Технологический стек
-- **Backend:** C# / ASP.NET Core 8.0
-- **ORM:** Entity Framework Core
-- **Database:** PostgreSQL (в Docker)
-- **API Docs:** Swagger / OpenAPI
-- **Frontend:** React 19 + Vite + TypeScript + Tailwind CSS
-- **Design:** Figma
+Система для приёма, обработки и анализа заявок на обучение.
 
+Дата защиты проекта: 26 июня 2026 года.
+
+## Возможности
+
+Система позволяет:
+
+* регистрировать пользователей и выполнять вход по ролям
+* создавать и обрабатывать заявки на обучение
+* назначать ответственных сотрудников
+* изменять статусы заявок
+* оставлять комментарии
+* вести историю изменений
+* просматривать статистику и аналитику
+* управлять справочниками направлений и форматов обучения
+
+## Технологии
+
+### Backend
+
+* ASP.NET Core 8
+* Entity Framework Core
+* PostgreSQL
+* JWT
+* Serilog
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+
+### Инфраструктура
+
+* Docker Compose
+* GitHub Actions
+* Swagger
+
+## Быстрый запуск
+
+Создайте файл `.env` на основе шаблона:
+
+```bash
+cp .env.example .env
+```
+
+Запустите проект:
+
+```bash
+docker compose up -d --build
+```
+
+После запуска будут доступны:
+
+| Сервис            | Адрес                         |
+| ----------------- | ----------------------------- |
+| Frontend          | http://localhost:3000         |
+| Backend и Swagger | http://localhost:5071/swagger |
+| PostgreSQL        | localhost:5432                |
+
+Для загрузки тестовых данных выполните:
+
+```bash
+docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
+```
+
+Подробную инструкцию по запуску можно узнать в [docs/docker-guide.md](docs/docker-guide.md).
+
+## Документация
+
+| Документ | Описание |
+| -------- | -------- |
+| [specification.md](docs/specification.md) | Техническое задание |
+| [architecture.md](docs/architecture.md) | Архитектура системы |
+| [database.md](docs/database.md) | Схема базы данных |
+| [docker-guide.md](docs/docker-guide.md) | Запуск через Docker |
+| [test-data.md](docs/test-data.md) | Тестовые пользователи и данные |
+| [implemented-features.md](docs/implemented-features.md) | Реализованные функции |
+| [known-limitations.md](docs/known-limitations.md) | Известные ограничения |
 
 ## Структура проекта
-- `/src/backend/api` - Исходный код API (ASP.NET Core 8)
-- `/src/frontend` - Исходный код клиентской части (React 19 + Vite)
-- `/scripts` - SQL-скрипты (seed-данные)
-- `/docs` - Документация (архитектура, БД, запуск, тестовые данные)
-- `docker-compose.yml` - Конфигурация Docker-инфраструктуры
-- `.env.example` - Шаблон переменных окружения
-- `.github/workflows/ci.yml` - CI/CD пайплайн
 
+```text
+.
+├── src/
+│   ├── backend/
+│   └── frontend/
+├── tests/
+├── docs/
+├── scripts/
+├── .github/
+├── docker-compose.yml
+└── .env.example
+```
 
-## Регламент разработки
+## Роли пользователей
 
-### 1. Гит-флоу и ветки
-- Работа ведется по модели **Feature Branches**.
-- Ветка `main` - защищена. Прямые коммиты запрещены. Ветка содержит только отлаженные стабильные версии. Слияние из `dev` в `main` производится только после полной отладки частей приложения
-- Работа ведется в ветке `dev`, все новые ветвления создаются от нее и мерджатся пул-реквестами обратно в `dev`
-- Типы веток:
-    - `feat/task-name` - новая функциональность.
-    - `fix/bug-name` - исправление ошибок.
-    - `docs/task-name` - работа с документацией.
-    - `refactor/task-name` - оптимизация кода.
-    - `chore/task-name` - рутинные задачи.
+Подробное описание прав доступа — [architecture.md](docs/architecture.md#роли-пользователей).
 
-### 2. Правила коммитов (Conventional Commits)
-Придерживаемся стандарта [Conventional Commits](https://www.conventionalcommits.org/ru/v1.0.0/).
-Формат: `тип(необязательная область): описание`
-Типы коммитов:
-- `feat`: добавление новой функциональности
-- `fix`: исправление ошибки
-- `docs`: изменения в документации
-- `refactor`: правки кода без изменения бизнес-логики
-- `chore`: обновление зависимостей, конфигов и прочее
-- `test`: тестирование, юнит тесты
+### Applicant
 
-### 3. Работа с Pull Requests
-- Любое изменение вносится только через **Pull Request**.
-- **Срок ревью:** не более 4 рабочих часов с момента открытия.
-- **Слияние:** требуется как минимум 1 подтверждение от участника команды.
+Создание заявок, просмотр своих заявок и работа с комментариями.
+
+### Manager
+
+Просмотр всех заявок, назначение ответственных сотрудников и изменение статусов.
+
+### Admin
+
+Управление справочниками, пользователями и просмотр статистики.
+
+### Director
+
+Просмотр аналитики, пользователей и заявок.
+
+## Статусы заявок
+
+Подробнее — [architecture.md](docs/architecture.md#статусы-заявок).
+
+```text
+New → InProgress → NeedsInfo
+                    ├─ Approved
+                    ├─ Rejected
+                    └─ Completed
+```
+
+## Тестирование
+
+Для серверной части реализованы модульные тесты на базе:
+
+* xUnit
+* FluentAssertions
+* Moq
+
+## Разработка
+
+Для работы используются отдельные ветки задач с последующим созданием Pull Request.
+
+Формат сообщений коммитов соответствует Conventional Commits:
+
+```text
+feat: новая функция
+fix: исправление ошибки
+docs: изменение документации
+refactor: изменение структуры кода без изменения логики
+test: добавление или изменение тестов
+chore: технические изменения
+```
