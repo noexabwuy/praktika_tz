@@ -179,7 +179,7 @@ namespace api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
             {   
-                _logger.LogWarning("CreateApplication: Отказ в доступе. Пользователь не авторизован.");
+                _logger.LogWarning("Заявка отклонена: Отказ в доступе. Пользователь не авторизован.");
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
 
@@ -188,7 +188,7 @@ namespace api.Controllers
             // Проверка на пустой запрос
             if (dto == null)
             {
-                _logger.LogWarning("CreateApplication: Некорректные данные запроса.");
+                _logger.LogWarning("Заявка отклонена: Некорректные данные запроса.");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
@@ -256,7 +256,10 @@ namespace api.Controllers
                 AssignedToName = created.AssignedTo?.FullName
             };
 
-            _logger.LogInformation("Заявка успешно создана. ID заявки: {ApplicationId}. Автор: {UserId}", responseDto.Id, currentUserId);
+            _logger.LogInformation(
+            "Заявка успешно создана. {@applicationcreation}",
+            new { ApplicationId = responseDto.Id, AuthorId = currentUserId, Title = dto.Title }
+            );
 
             return CreatedAtAction(nameof(Create), new { id = responseDto.Id }, responseDto);
         }

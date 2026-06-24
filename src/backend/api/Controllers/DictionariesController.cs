@@ -17,9 +17,9 @@ namespace api.Controllers
     public class DictionariesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<DictionariesController>? _logger;
+        private readonly ILogger<DictionariesController> _logger;
 
-        public DictionariesController(ApplicationDbContext context, ILogger<DictionariesController>? logger)
+        public DictionariesController(ApplicationDbContext context, ILogger<DictionariesController> logger)
         {
             _context = context;
             _logger = logger;
@@ -40,7 +40,7 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetDirections()
         {
-            _logger?.LogInformation("Получение направлений: Запрошен список всех направлений подготовки.");
+            _logger.LogInformation("Получение направлений: Запрошен список всех направлений подготовки.");
             var directions = await _context.Directions
                 .Select(d => new DictionaryDto
                 {
@@ -67,7 +67,7 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> GetStudyFormats()
         {
-            _logger?.LogInformation("Получение форматов обучения: Запрошен список всех форматов обучения.");
+            _logger.LogInformation("Получение форматов обучения: Запрошен список всех форматов обучения.");
             var formats = await _context.TrainingFormats
                 .Select(f => new DictionaryDto
                 {
@@ -94,7 +94,7 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         public IActionResult GetStatuses()
         {
-            _logger?.LogInformation("Получение статусов: Запрошен список всех статусов.");
+            _logger.LogInformation("Получение статусов: Запрошен список всех статусов.");
 
             var statuses = new List<DictionaryDto>
             {
@@ -132,11 +132,11 @@ namespace api.Controllers
         {
             if (dto == null)
             {
-                _logger?.LogWarning("Создание направления: Отклонено, некорректные данные запроса (null DTO).");
+                _logger.LogWarning("Создание направления: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
-            _logger?.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto.Name);
+            _logger.LogInformation("Создание направления: Попытка создания направления с названием '{Name}'", dto.Name);
 
             var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.Directions
@@ -144,7 +144,7 @@ namespace api.Controllers
 
             if (exists)
             {
-                _logger?.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Создание направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Направление с таким названием уже существует" });
             }
 
@@ -157,7 +157,7 @@ namespace api.Controllers
             _context.Directions.Add(direction);
             await _context.SaveChangesAsync();
 
-            _logger?.LogInformation("Создание направления: Успешно создано новое направление с ID {Id}", direction.Id);
+            _logger.LogInformation("Создание направления: Успешно создано новое направление с ID {Id}", direction.Id);
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
@@ -194,13 +194,13 @@ namespace api.Controllers
 
             if (direction == null)
             {
-                _logger?.LogWarning("Обновление направления: Направление с ID {Id} не найдено.", id);
+                _logger.LogWarning("Обновление направления: Направление с ID {Id} не найдено.", id);
                 return NotFound(new { message = "Направление не найдено" });
             }
 
             if (dto == null)
             {
-                _logger?.LogWarning("Обновление направления: Отклонено, некорректные данные запроса (null DTO).");
+                _logger.LogWarning("Обновление направления: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
@@ -210,14 +210,14 @@ namespace api.Controllers
 
             if (exists)
             {
-                _logger?.LogWarning("Обновление направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Обновление направления: Отклонено, направление '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Направление с таким названием уже существует" });
             }
 
             direction.Name = dto.Name ?? string.Empty;
             await _context.SaveChangesAsync();
 
-            _logger?.LogInformation("Обновление направления: Направление с ID {Id} успешно обновлено.", id);
+            _logger.LogInformation("Обновление направления: Направление с ID {Id} успешно обновлено.", id);
 
             return Ok(new DictionaryResponseDto
             {
@@ -253,7 +253,7 @@ namespace api.Controllers
 
             if (direction == null)
             {
-                _logger?.LogWarning("Удаление направления: Направление с ID {Id} не найдено.", id);
+                _logger.LogWarning("Удаление направления: Направление с ID {Id} не найдено.", id);
                 return NotFound(new { message = "Направление не найдено" });
             }
 
@@ -262,14 +262,14 @@ namespace api.Controllers
 
             if (hasApplications)
             {
-                _logger?.LogWarning("Удаление направления: Направление с ID {Id} используется в заявках.", id);
+                _logger.LogWarning("Удаление направления: Направление с ID {Id} используется в заявках.", id);
                 return BadRequest(new { message = "Нельзя удалить направление, так как оно используется в заявках" });
             }
 
             _context.Directions.Remove(direction);
             await _context.SaveChangesAsync();
 
-            _logger?.LogInformation("Удаление направления: Направление с ID {Id} успешно удалено.", id);
+            _logger.LogInformation("Удаление направления: Направление с ID {Id} успешно удалено.", id);
             return Ok(new { message = "Направление успешно удалено" });
         }
 
@@ -296,11 +296,11 @@ namespace api.Controllers
         {
             if (dto == null)
             {
-                _logger?.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса (null DTO).");
+                _logger.LogWarning("Создание формата обучения: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
-            _logger?.LogInformation("Создание формата обучения: Попытка создания формата с названием '{Name}'", dto.Name);
+            _logger.LogInformation("Создание формата обучения: Попытка создания формата с названием '{Name}'", dto.Name);
 
             var nameToCheck = (dto.Name ?? string.Empty).ToLowerInvariant();
             var exists = await _context.TrainingFormats
@@ -308,7 +308,7 @@ namespace api.Controllers
 
             if (exists)
             {
-                _logger?.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Создание формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Формат с таким названием уже существует" });
             }
 
@@ -321,7 +321,7 @@ namespace api.Controllers
             _context.TrainingFormats.Add(format);
             await _context.SaveChangesAsync();
 
-            _logger?.LogInformation("Создание формата обучения: Успешно создан новый формат с ID {Id}", format.Id);
+            _logger.LogInformation("Создание формата обучения: Успешно создан новый формат с ID {Id}", format.Id);
 
             return CreatedAtAction(null, new DictionaryResponseDto
             {
@@ -358,13 +358,13 @@ namespace api.Controllers
 
             if (format == null)
             {
-                _logger?.LogWarning("Обновление формата обучения: Формат с ID {Id} не найден.", id);
+                _logger.LogWarning("Обновление формата обучения: Формат с ID {Id} не найден.", id);
                 return NotFound(new { message = "Формат не найден" });
             }
 
             if (dto == null)
             {
-                _logger?.LogWarning("Обновление формата обучения: Отклонено, некорректные данные запроса (null DTO).");
+                _logger.LogWarning("Обновление формата обучения: Отклонено, некорректные данные запроса (null DTO).");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
@@ -374,12 +374,12 @@ namespace api.Controllers
 
             if (exists)
             {
-                _logger?.LogWarning("Обновление формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
+                _logger.LogWarning("Обновление формата обучения: Отклонено, формат '{Name}' уже существует.", dto.Name);
                 return BadRequest(new { message = "Формат с таким названием уже существует" });
             }
 
             format.Name = dto.Name ?? string.Empty;
-            _logger?.LogInformation("Обновление формата обучения: Формат с ID {Id} успешно обновлен.", id);
+            _logger.LogInformation("Обновление формата обучения: Формат с ID {Id} успешно обновлен.", id);
             await _context.SaveChangesAsync();
 
             return Ok(new DictionaryResponseDto
@@ -416,7 +416,7 @@ namespace api.Controllers
 
             if (format == null)
             {
-                _logger?.LogWarning("Удаление формата обучения: Формат с ID {Id} не найден.", id);
+                _logger.LogWarning("Удаление формата обучения: Формат с ID {Id} не найден.", id);
                 return NotFound(new { message = "Формат не найден" });
             }
 
@@ -425,14 +425,14 @@ namespace api.Controllers
 
             if (hasApplications)
             {
-                _logger?.LogWarning("Удаление формата обучения: Формат с ID {Id} используется в заявках.", id);
+                _logger.LogWarning("Удаление формата обучения: Формат с ID {Id} используется в заявках.", id);
                 return BadRequest(new { message = "Нельзя удалить формат, так как он используется в заявках" });
             }
 
             _context.TrainingFormats.Remove(format);
             await _context.SaveChangesAsync();
 
-            _logger?.LogInformation("Удаление формата обучения: Формат с ID {Id} успешно удалён.", id);
+            _logger.LogInformation("Удаление формата обучения: Формат с ID {Id} успешно удалён.", id);
             
             return Ok(new { message = "Формат успешно удален" });
         }

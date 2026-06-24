@@ -1,16 +1,18 @@
-name: Build and Test
+name: CI
 
 on:
   push:
     branches: [dev]
     paths:
       - "src/backend/**"
+      - "src/frontend/**"
       - "tests/**"
       - ".github/workflows/ci.yml"
   pull_request:
     branches: [dev]
     paths:
       - "src/backend/**"
+      - "src/frontend/**"
       - "tests/**"
       - ".github/workflows/ci.yml"
 
@@ -25,8 +27,8 @@ env:
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
 jobs:
-  build:
-    name: Build
+  build-backend:
+    name: Сборка бэкенда
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,12 +41,12 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Setup .NET
+      - name: Установка .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache packages
+      - name: Кеш пакетов
         uses: actions/cache@v5
         with:
           path: ${{ env.NUGET_PACKAGES }}
@@ -52,30 +54,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Restore
+      - name: Восстановление зависимостей
         run: |
           dotnet restore src/backend/api/api.csproj
           dotnet restore tests/TrainingCenter.Tests/TrainingCenter.Tests.csproj
 
-      - name: Build
+      - name: Сборка
         run: |
           dotnet build src/backend/api/api.csproj --configuration Release --no-restore
           dotnet build tests/TrainingCenter.Tests/TrainingCenter.Tests.csproj --configuration Release --no-restore
 
-      - name: Upload artifacts
+      - name: Загрузка артефактов
         uses: actions/upload-artifact@v7
         with:
-          name: build-output
+          name: backend-build
           path: |
             src/backend/**/bin/Release
             tests/**/bin/Release
           retention-days: 1
           compression-level: 6
 
-  test:
-    name: Tests
+  test-backend:
+    name: Тесты бэкенда
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-backend
     permissions:
       contents: read
       checks: write
@@ -91,12 +93,12 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Setup .NET
+      - name: Установка .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache packages
+      - name: Кеш пакетов
         uses: actions/cache@v5
         with:
           path: ${{ env.NUGET_PACKAGES }}
@@ -104,12 +106,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Download artifacts
+      - name: Загрузка артефактов
         uses: actions/download-artifact@v8
         with:
-          name: build-output
+          name: backend-build
 
-      - name: Run tests
+      - name: Запуск тестов
         run: |
           dotnet test tests/TrainingCenter.Tests/TrainingCenter.Tests.csproj \
             --configuration Release \
@@ -119,18 +121,18 @@ jobs:
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults
 
-      - name: Publish results
+      - name: Публикация результатов
         if: always()
         uses: dorny/test-reporter@v3
         with:
-          name: Test Results
+          name: Результаты тестов
           path: "./TestResults/*.trx"
           reporter: dotnet-trx
           fail-on-error: false
           token: ${{ secrets.GITHUB_TOKEN }}
           use-actions-summary: true
 
-      - name: Upload results
+      - name: Загрузка результатов
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -138,4 +140,45 @@ jobs:
           path: ./TestResults
           retention-days: 7
           overwrite: true
+          compression-level: 6
+
+  build-frontend:
+    name: Сборка фронтенда
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            src/frontend
+            .github
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Установка Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+
+      - name: Установка зависимостей
+        run: npm ci
+        working-directory: src/frontend
+
+      - name: Линтер
+        run: npm run lint
+        working-directory: src/frontend
+        continue-on-error: true
+
+      - name: Сборка
+        run: npm run build
+        working-directory: src/frontend
+
+      - name: Загрузка артефактов
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-build
+          path: src/frontend/dist
+          retention-days: 1
           compression-level: 6
