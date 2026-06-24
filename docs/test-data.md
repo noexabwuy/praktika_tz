@@ -19,6 +19,8 @@ docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 
 Скрипт идемпотентен: повторный запуск не дублирует данные.
 
+Подробная инструкция по запуску находится в [docker-guide.md](docker-guide.md).
+
 ---
 
 ## Тестовые пользователи
@@ -63,6 +65,13 @@ docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 | Курс 3D-моделирования и анимации | Rejected | sidorov |
 | Бизнес-анализ и сбор требований | Completed | petrova |
 | Docker и Kubernetes на практике | Completed | sidorov |
+| Маркетинг в соцсетях | NeedsInfo | petrova |
+| Управление IT-командой | Approved | sidorov |
+| Пентест и этичный хакинг | Rejected | sidorov |
+
+> **Примечания:**
+> - Статус **NeedsInfo** — у заявки «Маркетинг в соцсетях».
+> - Все роли в комментариях: `admin` (Admin) → заявка №11, `director` (Director) → заявка №13.
 
 ---
 

@@ -1,15 +1,15 @@
-# Локальный запуск через Docker
+# Запуск проекта через Docker
 
-## 1. Требования
+## Требования
 
-- **Windows/Mac** - Docker Desktop
-- **Linux** - Docker Engine
+Перед запуском должен быть установлен Docker:
 
----
+* Windows и macOS: Docker Desktop
+* Linux: Docker Engine
 
-## 2. Переменные окружения
+## Настройка окружения
 
-Создайте `.env` в корне проекта рядом с `docker-compose.yml`:
+Создайте файл `.env` рядом с `docker-compose.yml`.
 
 ```env
 POSTGRES_USER=admin
@@ -20,69 +20,60 @@ JWT_ISSUER=AppealsBackend
 JWT_AUDIENCE=AppealsFrontend
 ```
 
-> `.env` не коммитится в репо, только `.env.example`.
+Файл `.env` не хранится в репозитории. Для примера используется файл `.env.example`.
 
----
+## Запуск
 
-## 3. Запуск
+Соберите и запустите проект:
 
 ```bash
 docker compose up -d --build
 ```
 
----
+После запуска будут доступны следующие сервисы:
 
-## 4. Сервисы
+| Сервис            | Адрес                         |
+| ----------------- | ----------------------------- |
+| Frontend          | http://localhost:3000         |
+| Backend и Swagger | http://localhost:5071/swagger |
+| PostgreSQL        | localhost:5432                |
 
-| Сервис | URL |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend (Swagger) | http://localhost:5071/swagger |
-| PostgreSQL | localhost:5432 |
+## Загрузка тестовых данных
 
----
+После первого запуска база данных будет пустой. Для загрузки тестовых данных выполните команду:
 
-## 5. Загрузка тестовых данных
-
-БД при первом запуске пустая. Накатить seed:
-
-**Linux / macOS / Git Bash:**
-```bash
-docker compose exec db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /scripts/seed.sql
-```
-
-**PowerShell:**
-```powershell
-docker compose exec db psql -U $env:POSTGRES_USER -d $env:POSTGRES_DB -f /scripts/seed.sql
-```
-
-**Если переменные не читаются — подставьте значения из `.env` напрямую:**
 ```bash
 docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 ```
 
-Тестовые пользователи и состав данных — в [docs/test-data.md](test-data.md).
+Если используются другие параметры подключения, замените значения на свои.
 
----
+Информация о тестовых пользователях и данных находится в файле [test-data.md](test-data.md).
 
-## 6. Полезные команды
+## Полезные команды
+
+Пересборка backend-сервиса:
+```bash
+docker compose up -d --build backend
+```
+Остановка контейнеров:
+```bash
+docker compose stop
+```
+Удаление контейнеров:
+```bash
+docker compose down
+```
+Удаление контейнеров вместе с данными базы данных:
+```bash
+docker compose down -v
+```
+Просмотр логов всех сервисов:
+```bash
+docker compose logs -f
+```
+Просмотр логов backend-сервиса:
 
 ```bash
-# Пересборка конкретного сервиса
-docker compose up -d --build backend
-
-# Остановка (данные БД сохраняются)
-docker compose stop
-
-# Полная остановка и удаление контейнеров
-docker compose down
-
-# Удалить контейнеры вместе с данными БД
-docker compose down -v
-
-# Логи всех сервисов
-docker compose logs -f
-
-# Логи конкретного сервиса
 docker logs training_backend -f
 ```
