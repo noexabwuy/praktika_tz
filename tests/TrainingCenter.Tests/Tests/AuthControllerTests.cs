@@ -11,6 +11,8 @@ using api.Data;
 using api.Models.DTOs;
 using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace TrainingCenter.Tests.Tests
 {
@@ -35,7 +37,8 @@ namespace TrainingCenter.Tests.Tests
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
 
-            _controller = new AuthController(_context, _configuration);
+            var mockLogger = new Mock<ILogger<AuthController>>();
+            _controller = new AuthController(_context, _configuration, mockLogger.Object);
         }
 
         [Fact]

@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace api.Controllers
 {
@@ -22,11 +23,13 @@ namespace api.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
         /// <summary>
@@ -41,24 +44,30 @@ namespace api.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
         {
+            _logger.LogInformation("Попытка регистрации пользователя с логином: {Login}, Email: {Email}", dto.Login, dto.Email);
+
             if (string.IsNullOrWhiteSpace(dto.Login) || string.IsNullOrWhiteSpace(dto.Password))
             {
+                _logger.LogWarning("Регистрация отклонена: передан пустой логин или пароль.");
                 return BadRequest(new { message = "Логин и пароль обязательны." });
             }
 
             if (dto.Password.Length < 8)
             {
+                _logger.LogWarning("Регистрация отклонена: пароль для логина {Login} слишком короткий.", dto.Login);
                 return BadRequest(new { message = "Пароль должен содержать минимум 8 символов." });
             }
 
             if (dto.Password.Length > 72)
             {
+                _logger.LogWarning("Регистрация отклонена: пароль для логина {Login} слишком длинный.", dto.Login);
                 return BadRequest(new { message = "Пароль не должен превышать 72 символа." });
             }
 
             var exists = await _context.Users.AnyAsync(u => u.Login.ToLower() == dto.Login.ToLower());
             if (exists)
             {
+                _logger.LogWarning("Регистрация отклонена: логин '{Login}' уже занят.", dto.Login);
                 return BadRequest(new { message = "Этот логин уже занят." });
             }
 
@@ -85,6 +94,8 @@ namespace api.Controllers
                 Role = newUser.Role
             };
 
+            _logger.LogInformation("Пользователь {Login} успешно зарегистрирован с ID: {UserId}.", userDto.Login, userDto.Id);
+
             return Ok(new { message = "Регистрация успешна!", user = userDto });
         }
 
@@ -100,14 +111,19 @@ namespace api.Controllers
         [ProducesResponseType(401)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
+            _logger.LogInformation("Запрос на вход в систему для логина: {Login}", dto.Login);
+            
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Login.ToLower() == dto.Login.ToLower());
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
+                _logger.LogWarning("Неудачная попытка входа: неверный пароль для логина '{Login}'", dto.Login);
                 return Unauthorized(new { message = "Неверный логин или пароль." });
             }
 
             string token = GenerateJwtToken(user);
+
+            _logger.LogInformation("Пользователь {Login} (Роль: {Role}) успешно авторизован.", user.Login, user.Role);
 
             var userDto = new UserDto
             {
@@ -132,6 +148,8 @@ namespace api.Controllers
         /// <returns>Строка JWT-токена</returns>
         private string GenerateJwtToken(User user)
         {
+            _logger.LogDebug("Начало генерации JWT-токена для UserId: {UserId}", user.Id);
+
             var secretKey = Environment.GetEnvironmentVariable("JwtSettings__Secret") ?? _configuration["JwtSettings:Secret"];
             var issuer = Environment.GetEnvironmentVariable("JwtSettings__Issuer") ?? _configuration["JwtSettings:Issuer"];
             var audience = Environment.GetEnvironmentVariable("JwtSettings__Audience") ?? _configuration["JwtSettings:Audience"];
@@ -154,6 +172,8 @@ namespace api.Controllers
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: creds
             );
+
+            _logger.LogDebug("JWT-токен успешно сформирован для подписи.");
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

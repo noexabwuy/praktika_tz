@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Models.DTOs;
 using api.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace api.Controllers
 {
@@ -19,10 +20,12 @@ namespace api.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(ApplicationDbContext context)
+        public ApplicationsController(ApplicationDbContext context, ILogger<ApplicationsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -57,15 +60,18 @@ namespace api.Controllers
             [FromQuery] DateTime? fromDate = null,
             [FromQuery] DateTime? toDate = null)
         {
+
             // Получаем ID текущего пользователя из токена
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
             {
+                _logger.LogWarning("GetApplications: Не удалось определить пользователя из JWT токена.");
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
 
             // Получаем роль пользователя
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            _logger.LogInformation("Пользователь {UserId} (Роль: {Role}) запросил список заявок. Фильтр 'my': {My}", currentUserId, userRole, my);
 
             // Если my = false — проверяем, что пользователь имеет одну из разрешённых ролей
             if (!my)
@@ -73,6 +79,7 @@ namespace api.Controllers
                 var allowedRoles = new[] { "Admin", "Manager", "Director" };
                 if (userRole == null || !allowedRoles.Contains(userRole))
                 {
+                    _logger.LogWarning("Доступ запрещен: Пользователь {UserId} с ролью Applicant пытался запросить ВСЕ заявки (my=false).", currentUserId);
                     return Forbid(); // 403 - не достаточно прав доступа
                 }
             }
@@ -144,7 +151,9 @@ namespace api.Controllers
                     AssignedToName = a.AssignedTo != null ? a.AssignedTo.FullName : null
                 })
                 .ToListAsync();
-
+            
+            _logger.LogDebug("Успешно возвращено {Count} заявок для пользователя {UserId}.", applications.Count, currentUserId);
+            
             return Ok(applications);
         }
 
@@ -169,13 +178,17 @@ namespace api.Controllers
             // Получаем ID текущего пользователя из токена
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
-            {
+            {   
+                _logger.LogWarning("Заявка отклонена: Отказ в доступе. Пользователь не авторизован.");
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
+
+            _logger.LogInformation("Пользователь {UserId} инициировал создание заявки: '{Title}'", currentUserId, dto.Title);
 
             // Проверка на пустой запрос
             if (dto == null)
             {
+                _logger.LogWarning("Заявка отклонена: Некорректные данные запроса.");
                 return BadRequest(new { message = "Некорректные данные запроса" });
             }
 
@@ -183,6 +196,7 @@ namespace api.Controllers
             var directionExists = await _context.Directions.AnyAsync(d => d.Id == dto.DirectionId);
             if (!directionExists)
             {
+                _logger.LogWarning("Заявка отклонена: Направление с ID {DirectionId} не найдено.", dto.DirectionId);
                 return BadRequest(new { message = "Указанное направление обучения не найдено." });
             }
 
@@ -190,6 +204,7 @@ namespace api.Controllers
             var formatExists = await _context.TrainingFormats.AnyAsync(f => f.Id == dto.FormatId);
             if (!formatExists)
             {
+                _logger.LogWarning("Заявка отклонена: Формат обучения с ID {FormatId} не найден.", dto.FormatId);
                 return BadRequest(new { message = "Указанный формат обучения не найден." });
             }
 
@@ -241,6 +256,11 @@ namespace api.Controllers
                 AssignedToName = created.AssignedTo?.FullName
             };
 
+            _logger.LogInformation(
+            "Заявка успешно создана. {@applicationcreation}",
+            new { ApplicationId = responseDto.Id, AuthorId = currentUserId, Title = dto.Title }
+            );
+
             return CreatedAtAction(nameof(Create), new { id = responseDto.Id }, responseDto);
         }
 
@@ -274,24 +294,30 @@ namespace api.Controllers
                 .Include(a => a.Author)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
+            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
+
+            _logger.LogInformation("Пользователь {UserId} пытается назначить сотрудника {ManagerId} на заявку {ApplicationId}", currentUserId, dto.AssignedToId, id);
+
             if (application == null)
             {
+                _logger.LogWarning("Назначение отклонено: Заявка {ApplicationId} не найдена.", id);
                 return NotFound(new { message = "Заявка не найдена." });
             }
 
             var targetUser = await _context.Users.FindAsync(dto.AssignedToId);
             if (targetUser == null)
-            {
+            {   
+                _logger.LogWarning("Назначение отклонено: Пользователь {ManagerId} не существует.", dto.AssignedToId);
                 return BadRequest(new { message = "Указанный пользователь не найден." });
             }
 
             if (!string.Equals(targetUser.Role, "Manager", StringComparison.OrdinalIgnoreCase))
-            {
+            {   
+                _logger.LogWarning("Назначение отклонено: Пользователь {ManagerId} не является менеджером.", dto.AssignedToId);
                 return BadRequest(new { message = "Назначить ответственным можно только пользователя с ролью Manager." });
             }
 
-            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
 
             if (string.Equals(application.Status, "New", StringComparison.OrdinalIgnoreCase))
             {
@@ -333,6 +359,8 @@ namespace api.Controllers
                 AssignedToName = application.AssignedTo?.FullName
             };
 
+            _logger.LogInformation("Заявка {ApplicationId} успешно назначена на менеджера {ManagerId} сотрудником {UserId}.", id, dto.AssignedToId, currentUserId);
+
             return Ok(responseDto);
         }
 
@@ -367,8 +395,14 @@ namespace api.Controllers
                 .Include(a => a.AssignedTo)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
+            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
+
+            _logger.LogInformation("Пользователь {UserId} пытается изменить статус заявки {ApplicationId} на '{Status}'", currentUserId, id, dto.Status);
+            
             if (application == null)
             {
+                _logger.LogWarning("Изменение статуса отклонено: Заявка {ApplicationId} не найдена.", id);
                 return NotFound(new { message = "Заявка не найдена." });
             }
 
@@ -377,11 +411,9 @@ namespace api.Controllers
                  string.Equals(dto.Status, "Completed", StringComparison.OrdinalIgnoreCase)) && 
                 application.AssignedToId == null)
             {
+                _logger.LogWarning("Изменение статуса отклонено: Попытка перевода заявки {ApplicationId} в статус '{Status}' без назначенного менеджера.", id, dto.Status);
                 return BadRequest(new { message = "Нельзя перевести заявку в финальный статус без назначенного ответственного менеджера." });
             }
-
-            var currentUserIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            Guid.TryParse(currentUserIdClaim?.Value, out Guid currentUserId);
 
             var history = new StatusHistory
             {
@@ -417,6 +449,7 @@ namespace api.Controllers
                 AssignedToName = application.AssignedTo?.FullName
             };
 
+            _logger.LogInformation("Статус заявки {ApplicationId} успешно изменен на '{Status}' пользователем {UserId}.", id, dto.Status, currentUserId);
             return Ok(responseDto);
         }
 
@@ -447,20 +480,25 @@ namespace api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
             {
+                _logger.LogWarning("Добавление комментария: Не удалось определить пользователя из токена.");
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
+            _logger.LogInformation("Пользователь {UserId} пытается добавить комментарий к заявке {ApplicationId}", currentUserId, id);
+
             var application = await _context.Applications.FindAsync(id);
             if (application == null)
             {
+                _logger.LogWarning("Добавление комментария: Заявка {ApplicationId} не найдена.", id);
                 return NotFound(new { message = "Заявка не найдена." });
             }
 
             // Проверка прав: заявитель может комментировать только свою заявку
             if (userRole == "Applicant" && application.AuthorId != currentUserId)
             {
+                _logger.LogWarning("Добавление комментария: Пользователь {UserId} не является автором заявки {ApplicationId}.", currentUserId, id);
                 return Forbid();
             }
 
@@ -475,6 +513,8 @@ namespace api.Controllers
 
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
+
+            
 
             // Подгружаем имя автора для красивого ответа
             var authorName = await _context.Users
@@ -491,6 +531,8 @@ namespace api.Controllers
                 Text = comment.Text,
                 CreatedAt = comment.CreatedAt
             };
+            
+            _logger.LogInformation("Комментарий успешно добавлен к заявке {ApplicationId} пользователем {UserId}", id, currentUserId);
 
             return Ok(responseDto);
         }
@@ -519,6 +561,7 @@ namespace api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
             {
+                _logger.LogWarning("Получение комментариев: Не удалось определить пользователя из токена.");
                 return Unauthorized(new { message = "Не удалось определить пользователя из токена." });
             }
 
@@ -527,12 +570,14 @@ namespace api.Controllers
             var application = await _context.Applications.FindAsync(id);
             if (application == null)
             {
+                _logger.LogWarning("Получение комментариев: Заявка {ApplicationId} не найдена.", id);
                 return NotFound(new { message = "Заявка не найдена." });
             }
 
             // Проверка прав: заявитель может видеть комментарии только к своей заявке
             if (userRole == "Applicant" && application.AuthorId != currentUserId)
             {
+                _logger.LogWarning("Получение комментариев: Пользователь {UserId} не является автором заявки {ApplicationId}.", currentUserId, id);
                 return Forbid();
             }
 
@@ -549,6 +594,8 @@ namespace api.Controllers
                     CreatedAt = c.CreatedAt
                 })
                 .ToListAsync();
+
+            _logger.LogDebug("Получение комментариев: Успешно возвращено {Count} комментариев для заявки {ApplicationId}.", comments.Count, id);
 
             return Ok(comments);
         }

@@ -12,6 +12,8 @@ using api.Data;
 using api.Models.DTOs;
 using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests.Tests
 {
@@ -27,7 +29,8 @@ namespace TrainingCenter.Tests.Tests
         public ApplicationsControllerTests()
         {
             _context = TestDatabaseHelper.CreateAndSeedDatabase();
-            _controller = new ApplicationsController(_context);
+            var mockLogger = new Mock<ILogger<ApplicationsController>>();
+            _controller = new ApplicationsController(_context, mockLogger.Object);
         }
 
         private void SetupUserContext(Guid userId, string role)
@@ -209,19 +212,18 @@ namespace TrainingCenter.Tests.Tests
         public async Task UpdateStatus_ToFinalStatusWithoutManager_ReturnsBadRequest()
         {
             // Arrange
-            SetupUserContext(_managerUserId, "Manager");
-            var application = await SeedApplicationAsync(_applicantUserId, "Заявка без менеджера", assignedToId: null);
+                SetupUserContext(_managerUserId, "Manager");
+                var application = await SeedApplicationAsync(_applicantUserId, "Заявка без менеджера", assignedToId: null);
 
-            var dto = new UpdateApplicationStatusRequestDto { Status = "Completed" };
+                var dto = new UpdateApplicationStatusRequestDto { Status = "Completed" };
 
-            // Act
-            var result = await _controller.Create(null!); // Имитация некорректного вызова / вызов UpdateStatus
-            var patchResult = await _controller.UpdateStatus(application.Id, dto);
+                // Act
+                var patchResult = await _controller.UpdateStatus(application.Id, dto);
 
-            // Assert
-            var badRequestResult = patchResult as BadRequestObjectResult;
-            badRequestResult.Should().NotBeNull();
-            badRequestResult!.StatusCode.Should().Be(400);
+                // Assert
+                var badRequestResult = patchResult as BadRequestObjectResult;
+                badRequestResult.Should().NotBeNull();
+                badRequestResult!.StatusCode.Should().Be(400);
         }
 
         // =========================================================================

@@ -11,6 +11,8 @@ using api.Data;
 using api.Models.DTOs;
 using api.Models.Entities;
 using TrainingCenter.Tests.Helpers;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace TrainingCenter.Tests.Tests
 {
@@ -24,7 +26,8 @@ namespace TrainingCenter.Tests.Tests
         public AnalyticsControllerTests()
         {
             _context = TestDatabaseHelper.CreateAndSeedDatabase();
-            _controller = new AnalyticsController(_context);
+            var mockLogger = new Mock<ILogger<AnalyticsController>>();
+            _controller = new AnalyticsController(_context, mockLogger.Object);
         }
 
         private void SetupUserContext(Guid userId, string role)
