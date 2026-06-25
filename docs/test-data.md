@@ -31,8 +31,12 @@ docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 | `admin` | `admin123` | Admin |
 | `ivanov` | `123` | Manager |
 | `smirnova` | `123` | Manager |
+| `kuznetsov` | `123` | Manager |
 | `petrova` | `123` | Applicant |
 | `sidorov` | `123` | Applicant |
+| `fedorova` | `123` | Applicant |
+| `popov` | `123` | Applicant |
+| `novikova` | `123` | Applicant |
 
 ---
 
@@ -51,15 +55,15 @@ docker compose exec db psql -U admin -d training_center -f /scripts/seed.sql
 
 ---
 
-## Тестовые заявки — 10 записей
+## Тестовые заявки — 13 записей
 
 | Тема | Статус | Автор |
 |---|---|---|
-| Курс по C# и .NET | New | ivanov |
-| DevOps-инжиниринг с нуля | New | sidorov |
+| Курс по C# и .NET | New | petrova |
+| DevOps-инжиниринг с нуля | InProgress | sidorov |
 | Курс по веб-дизайну и Figma | InProgress | petrova |
-| Интенсив по Python для анализа данных | Approved | smirnova |
-| Курс по управлению проектами (PM) | Completed | admin |
+| Интенсив по Python для анализа данных | Approved | petrova |
+| Курс по управлению проектами (PM) | Completed | sidorov |
 | Кибербезопасность: базовый уровень | Approved | petrova |
 | Fullstack-разработка на TypeScript | Approved | sidorov |
 | Курс 3D-моделирования и анимации | Rejected | sidorov |
