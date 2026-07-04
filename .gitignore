@@ -1,0 +1,17 @@
+.env
+.actrc
+.env.local
+.env.*
+!.env.example
+.vs/
+.vscode/
+.idea/
+*.log
+*.tmp
+*.swp
+node_modules/
+.DS_Store
+bin/
+obj/
+dist/
+logs_data/

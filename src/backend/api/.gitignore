@@ -1,0 +1,33 @@
+# .NET build output
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user        
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Secrets
+.env
+appsettings.Development.json
+appsettings.Production.json
+
+# Logs
+Logs*/
+logs*/
+*.log
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.pid.lock
+
+# Vim
+*.swp
